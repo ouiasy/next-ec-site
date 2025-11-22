@@ -9,7 +9,7 @@ const sampleData = {
         '/images/sample-products/p1-1.jpg',
         '/images/sample-products/p1-2.jpg',
       ],
-      price: 59.99,
+      price: 5999,
       brand: 'Polo',
       rating: 4.5,
       numReviews: 10,
