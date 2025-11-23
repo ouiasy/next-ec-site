@@ -11,7 +11,6 @@ const NotFound = () => {
                 <div className="text-center p-4">
                     <Button className="">Back to Home</Button>
                 </div>
-
             </Card>
         </div>
     );

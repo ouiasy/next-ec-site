@@ -1,7 +1,7 @@
 "use server";
 
 import {db} from "@/db"
-import {desc} from "drizzle-orm";
+import {desc, eq} from "drizzle-orm";
 import {product} from "@/db/schema/product";
 import {LATEST_PRODUCTS_LIMIT} from "@/lib/constants";
 
@@ -17,5 +17,15 @@ export const getLatestProducts = async () => {
         }
         console.log(product.images)
     })
+    return data
+}
+
+export const getProductBySlug = async (slug: string) => {
+    const data = await db.query.product.findFirst({
+        where: eq(product.slug, slug)
+    });
+    if (!data) return
+    data.images = JSON.parse(data.images)
+
     return data
 }
