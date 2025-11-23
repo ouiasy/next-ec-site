@@ -3,7 +3,7 @@ import {sqliteTable, text, integer, real} from "drizzle-orm/sqlite-core";
 import {nanoid} from "nanoid";
 
 
-export const productTable = sqliteTable("product", {
+export const product = sqliteTable("product", {
     id: text().primaryKey().$defaultFn(() => nanoid()),
     name: text().notNull(),
     slug: text().notNull().unique(),

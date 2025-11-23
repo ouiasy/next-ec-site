@@ -1,8 +1,9 @@
 import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image"
+import {Product} from "@/types/product";
 
-export const ProductCard = ({ product }: {product: any}) => {
+export const ProductCard = ({ product }: {product: Product}) => {
     return (
         <Card className="w-80 sm:w-60 xl:w-80 max-w-sm p-0 flex flex-col mx-auto">
             <CardHeader className="h-3/5 relative">
