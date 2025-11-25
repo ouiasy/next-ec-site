@@ -5,14 +5,14 @@ import {Button} from "@/components/ui/button";
 import {signInDefaultValue} from "@/lib/constants";
 import Link from "next/link";
 import {useActionState, useEffect} from "react";
-import {signInWithCredentials} from "@/actions/user.actions";
+import {signUpUser} from "@/actions/user.actions";
 import {useFormStatus} from "react-dom";
-import { toast } from "sonner"
+import {toast} from "sonner"
 import {useSearchParams} from "next/navigation";
 
 
 export const SignUpForm = () => {
-  const [data, action] = useActionState(signInWithCredentials, {
+  const [data, action] = useActionState(signUpUser, {
     success: false,
     message: ""
   })
@@ -28,11 +28,11 @@ export const SignUpForm = () => {
   }, [data]);
 
   const SignUpButton = () => {
-    const { pending } = useFormStatus();
+    const {pending} = useFormStatus();
 
     return (
         <Button disabled={pending} className="w-full " variant="default">
-          { pending ? "Signing Up ..." : "SignUp"}
+          {pending ? "Signing Up ..." : "SignUp"}
         </Button>
     )
   }
@@ -42,7 +42,19 @@ export const SignUpForm = () => {
         <input type="hidden" name="callbackUrl" value={callbackUrl}/>
         <div className="space-y-6">
           <div>
-            <Label htmlFor="name">Name</Label>
+            <div className="flex justify-between">
+              <Label htmlFor="name">Name</Label>
+              <div>
+                {
+                    data?.errors?.name && (
+                        <p className="text-destructive">
+                          *{data.errors.name.join(". ")}.
+                        </p>
+                    )
+                }
+              </div>
+            </div>
+
             <Input
                 id="name" name="name" type="name"
                 required autoComplete="name"
@@ -50,7 +62,18 @@ export const SignUpForm = () => {
             />
           </div>
           <div>
-            <Label htmlFor="email">Email</Label>
+            <div className="flex justify-between">
+              <Label htmlFor="email">Email</Label>
+              <div>
+                {
+                    data?.errors?.email && (
+                        <p className="text-destructive">
+                          *{data.errors.email.join(". ")}.
+                        </p>
+                    )
+                }
+              </div>
+            </div>
             <Input
                 id="email" name="email" type="email"
                 required autoComplete="email"
@@ -58,7 +81,18 @@ export const SignUpForm = () => {
             />
           </div>
           <div>
-            <Label htmlFor="password">Password</Label>
+            <div className="flex justify-between">
+              <Label htmlFor="password">Password</Label>
+              <div>
+                {
+                    data?.errors?.password && (
+                        <p className="text-destructive">
+                          *{data.errors.password.join(". ")}.
+                        </p>
+                    )
+                }
+              </div>
+            </div>
             <Input
                 id="password" name="password" type="password"
                 required autoComplete="password"
@@ -66,7 +100,16 @@ export const SignUpForm = () => {
             />
           </div>
           <div>
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <div className="flex flex-col">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              {
+                  data?.errors?.confirmPassword && (
+                      <p className="text-destructive">
+                        *{data.errors.confirmPassword.join(". ")}.
+                      </p>
+                  )
+              }
+            </div>
             <Input
                 id="confirmPassword" name="confirmPassword" type="password"
                 required autoComplete="confirmPassword"
@@ -77,7 +120,7 @@ export const SignUpForm = () => {
             <SignUpButton/>
           </div>
           <div className="text-sm text-center text-muted-foreground">
-             Already have an account? {" "}
+            Already have an account? {" "}
             <Link href="/signin" className="underline">
               Sign In
             </Link>

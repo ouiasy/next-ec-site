@@ -4,6 +4,9 @@ import {signInFormSchema, signUpFormSchema} from "@/zod/user";
 import { auth } from "@/lib/auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import {headers} from "next/headers";
+import {signUpErrorHandling} from "@/lib/server-utils";
+import {z} from "zod";
+import {APIError} from "better-auth/api";
 
 export const signInWithCredentials = async (
   prevState: unknown,
@@ -41,15 +44,22 @@ export const signOutUser = async () => {
 };
 
 
+export type SignUpState = {
+  success: boolean;
+  message?: string;
+  fields?: Record<string, string>;
+  errors?: Record<string, string[]>;
+}
+
 export const signUpUser = async (
     previousState: unknown, formData: FormData,
-) => {
+): Promise<SignUpState> => {
   try {
     const user = signUpFormSchema.parse({
       name: formData.get("name"),
       email: formData.get("email"),
       password: formData.get("password"),
-      confirmPassowrd: formData.get("confirmPassword"),
+      confirmPassword: formData.get("confirmPassword"),
     })
 
     await auth.api.signUpEmail({
@@ -65,6 +75,19 @@ export const signUpUser = async (
     if (isRedirectError(error)) {
       throw error
     }
-    return {success: true, message: "user was not registered.."}
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        errors: z.flattenError(error).fieldErrors,
+      }
+    }
+    if (error instanceof APIError) {
+      return {
+        success: false,
+        message: error.message,
+      }
+    }
+
+    return {success: false, message: JSON.stringify(error)}
   }
 }

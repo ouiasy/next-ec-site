@@ -8,6 +8,7 @@ export const auth = betterAuth({
   baseURL: SERVER_URL,
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: false,
   },
   database: drizzleAdapter(db, {
     provider: "sqlite",

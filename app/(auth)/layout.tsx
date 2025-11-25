@@ -7,7 +7,7 @@ export default function AuthLayout({
 }>) {
   return (
     <div className="flex justify-center min-h-screen w-full items-center">
-      <Toaster position="top-center" richColors/>
+      <Toaster position="top-center" richColors duration={5000}/>
       {children}
     </div>
   );
