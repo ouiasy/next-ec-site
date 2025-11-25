@@ -1,8 +1,9 @@
 "use server";
 
-import { signInFormSchema } from "@/zod/user";
+import {signInFormSchema, signUpFormSchema} from "@/zod/user";
 import { auth } from "@/lib/auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
+import {headers} from "next/headers";
 
 export const signInWithCredentials = async (
   prevState: unknown,
@@ -33,8 +34,37 @@ export const signInWithCredentials = async (
 };
 
 // sign user out.
-export const signOut = async () => {
+export const signOutUser = async () => {
   await auth.api.signOut({
     headers: await headers(),
   });
 };
+
+
+export const signUpUser = async (
+    previousState: unknown, formData: FormData,
+) => {
+  try {
+    const user = signUpFormSchema.parse({
+      name: formData.get("name"),
+      email: formData.get("email"),
+      password: formData.get("password"),
+      confirmPassowrd: formData.get("confirmPassword"),
+    })
+
+    await auth.api.signUpEmail({
+      body: {
+        name: user.name,
+        email: user.email,
+        password: user.password,
+      }
+    })
+
+    return { success: true, message: "successfully created user"}
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error
+    }
+    return {success: true, message: "user was not registered.."}
+  }
+}

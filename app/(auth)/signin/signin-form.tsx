@@ -7,7 +7,6 @@ import Link from "next/link";
 import {useActionState, useEffect} from "react";
 import {signInWithCredentials} from "@/actions/user.actions";
 import {useFormStatus} from "react-dom";
-import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 import {useSearchParams} from "next/navigation";
 
