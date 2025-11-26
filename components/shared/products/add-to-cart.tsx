@@ -6,7 +6,7 @@ import {toast} from "sonner";
 import {useRouter} from "next/navigation";
 
 
-export const AddToCart = (item: CartItemType) => {
+export const AddToCart = ({item}: {item: CartItemType}) => {
   const router = useRouter()
   const handleAddToCart = async () => {
     const res = await AddItemToCart(item)

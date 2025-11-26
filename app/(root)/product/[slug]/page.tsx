@@ -70,7 +70,14 @@ async function ProductDetail({params}: {
                   {
                       product.stock! > 0 && (
                           <div className="flex justify-center">
-                            <AddToCart/>
+                            <AddToCart item={{
+                              productId: product.id,
+                              name: product.name,
+                              slug: product.slug,
+                              qty: 1,
+                              image: product.images![0],
+                              price: product.price,
+                            }}/>
                           </div>
                       )
                   }
