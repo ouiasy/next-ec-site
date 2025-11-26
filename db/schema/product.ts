@@ -17,7 +17,7 @@ export const products = sqliteTable("products", {
   brand: text(),
   rating: real().default(0),
   numReviews: integer().default(0),
-  stock: integer(),
+  stock: integer().default(0),
   isFeatured: integer({ mode: "boolean" }).default(false),
   banner: text(),
   createdAt: integer("created_at", { mode: "timestamp_ms" })

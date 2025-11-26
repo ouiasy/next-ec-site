@@ -13,7 +13,7 @@ const main = async () => {
           name: f.string(),
           slug: f.string({isUnique: true}),
           category: f.string(),
-          description: f.string(),
+          description: f.string({arraySize: 50}),
           images: f.valuesFromArray({
             values: [
               '["/images/sample-products/p1-1.jpg","/images/sample-products/p1-2.jpg"]',
