@@ -3,8 +3,9 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import Link from "next/link";
 import Image from "next/image";
 import {SigninForm} from "@/app/(auth)/signin/signin-form";
-import {authClient} from "@/lib/auth-client";
 import {redirect} from "next/navigation";
+import {auth} from "@/lib/auth";
+import {headers} from "next/headers";
 
 export const metadata: Metadata = {
   title: "Sign In"
@@ -19,9 +20,11 @@ const SignInPage = async (
 ) => {
   const { callbackUrl } = await props.searchParams;
 
-  const session = await authClient.getSession();
-  console.log(session)
-  if (session.data) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  console.log("session: ", session)
+  if (session) {
     // TODO: check safety..
     redirect(callbackUrl || "/")
   }

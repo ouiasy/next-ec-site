@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "better-schema": "@better-auth/cli generate --output db/schema/users.ts",
+    "drizzle-migrate": "drizzle-kit generate",
+    "drizzle-apply": "drizzle-kit migrate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

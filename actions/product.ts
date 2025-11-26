@@ -14,7 +14,6 @@ export const getLatestProducts = async () => {
     if (product.images) {
       product.images = JSON.parse(product.images);
     }
-    console.log(product.images);
   });
   return data;
 };

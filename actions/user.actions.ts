@@ -4,7 +4,6 @@ import {signInFormSchema, signUpFormSchema} from "@/zod/user";
 import { auth } from "@/lib/auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import {headers} from "next/headers";
-import {signUpErrorHandling} from "@/lib/server-utils";
 import {z} from "zod";
 import {APIError} from "better-auth/api";
 

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {auth} from "@/lib/auth";
-import {authClient} from "@/lib/auth-client";
 import {Button} from "@/components/ui/button";
 import {UserIcon} from "lucide-react";
 import {
@@ -11,10 +10,13 @@ import {
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu"
 import {signOutUser} from "@/actions/user.actions";
+import {headers} from "next/headers";
 
 export const UserButton = async ()  => {
-  const session = await authClient.getSession();
-  if (!session.data) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
     return (
         <Button asChild variant={"outline"}>
           <Link href="/signin">
@@ -24,8 +26,7 @@ export const UserButton = async ()  => {
     )
   }
 
-  const firstInitial = session.data.user?.name.charAt(0).toUpperCase() ?? "U";
-
+  const firstInitial = session.user?.name.charAt(0).toUpperCase() ?? "U";
 
   return (
       <div className="flex gap-2 items-center">
@@ -44,10 +45,10 @@ export const UserButton = async ()  => {
             <DropdownMenuLabel>
               <div>
                 <div>
-                  {session.data?.user?.name}
+                  {session.user?.name}
                 </div>
-                <div>
-                  {session.data?.user?.email}
+                <div className="text-muted-foreground">
+                  {session.user?.email}
                 </div>
               </div>
             </DropdownMenuLabel>
