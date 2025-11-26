@@ -4,7 +4,7 @@ import {db} from "@/db";
 import {nanoid} from "nanoid";
 import {SERVER_URL} from "@/lib/constants";
 import {nextCookies} from "better-auth/next-js";
-import {admin, jwt} from "better-auth/plugins"
+import {admin, anonymous, jwt} from "better-auth/plugins"
 
 export const auth = betterAuth({
   baseURL: SERVER_URL,
@@ -32,5 +32,6 @@ export const auth = betterAuth({
     nextCookies(),
     jwt(),
     admin(),
+    anonymous(),
   ]
 });

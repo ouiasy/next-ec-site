@@ -1,29 +1,19 @@
 import "dotenv/config";
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
-import { seed } from "drizzle-seed";
-import { products } from "@/db/schema/product";
-import { users } from "../schema/users";
+import {seed} from "drizzle-seed";
+import {products} from "@/db/schema/product";
+import {db} from "@/db";
 
 const main = async () => {
   try {
     await db.delete(products);
-    await db.delete(users);
-    await seed(db, { products, users }).refine((f) => ({
-      users: {
-        columns: {
-          name: f.fullName(),
-          email: f.email(),
-          emailVerified: f.boolean(),
-        },
-        count: 10,
-      },
+    await seed(db, {products}).refine((f) => ({
       products: {
         count: 10,
         columns: {
           name: f.string(),
-          slug: f.string({ isUnique: true }),
+          slug: f.string({isUnique: true}),
           category: f.string(),
+          description: f.string(),
           images: f.valuesFromArray({
             values: [
               '["/images/sample-products/p1-1.jpg","/images/sample-products/p1-2.jpg"]',
@@ -59,12 +49,5 @@ const main = async () => {
   console.log("done");
 };
 
-const client = createClient({
-  url: process.env.TURSO_DATABASE_URL!,
-  authToken: process.env.TURSO_AUTH_TOKEN!,
-});
-const db = drizzle({
-  client,
-});
 
 main();
