@@ -6,6 +6,7 @@ import {SigninForm} from "@/app/(auth)/signin/signin-form";
 import {redirect} from "next/navigation";
 import {auth} from "@/lib/auth";
 import {headers} from "next/headers";
+import {sanitizePath} from "@/utils/sanitize-url";
 
 export const metadata: Metadata = {
   title: "Sign In"
@@ -14,19 +15,18 @@ export const metadata: Metadata = {
 const SignInPage = async (
     props: {
       searchParams: Promise<{
-        callbackUrl: string
+        callback: string
       }>
     }
 ) => {
-  const { callbackUrl } = await props.searchParams;
+  const { callback } = await props.searchParams;
 
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  console.log("session: ", session)
   if (session) {
     // TODO: check safety..
-    redirect(callbackUrl || "/")
+    redirect(sanitizePath(callback) || "/")
   }
   return (
       <div className="w-full max-w-md mx-auto">
