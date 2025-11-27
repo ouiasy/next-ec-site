@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {signOutUser} from "@/actions/user.actions";
 import {headers} from "next/headers";
+import {LogoutButton} from "@/components/shared/header/logout-button";
 
 export const UserButton = async ()  => {
   const session = await auth.api.getSession({
@@ -53,11 +54,7 @@ export const UserButton = async ()  => {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuItem asChild>
-              <form action={signOutUser}>
-                <Button variant="ghost">
-                  Sign out
-                </Button>
-              </form>
+              <LogoutButton/>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

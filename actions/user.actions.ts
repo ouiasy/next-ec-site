@@ -7,6 +7,7 @@ import {headers} from "next/headers";
 import {z} from "zod";
 import {APIError} from "better-auth/api";
 import {redirect} from "next/navigation";
+import {toast} from "sonner";
 
 export const signInWithCredentials = async (
   prevState: {success: boolean, message: string} | null,
@@ -39,10 +40,18 @@ export const signInWithCredentials = async (
 
 // sign user out.
 export const signOutUser = async () => {
-  await auth.api.signOut({
-    headers: await headers(),
-  });
-  redirect("/")
+  try {
+    await auth.api.signOut({
+      headers: await headers(),
+    });
+    return {
+      success: true,
+    }
+  } catch (e) {
+    return {
+      success: false
+    }
+  }
 };
 
 
