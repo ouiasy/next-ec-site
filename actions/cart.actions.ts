@@ -26,7 +26,6 @@ export const AddItemToCart = async (item: CartItemType): Promise<{ success: bool
     userId = session?.user.id
 
     try {
-      console.log(userId);
       await db.insert(carts).values({
         userId: userId,
       });
@@ -46,7 +45,6 @@ export const AddItemToCart = async (item: CartItemType): Promise<{ success: bool
         cartItems: true,
       }
     })
-    console.log("data: ", data);
 
     return {
       success: true, message: "added to cart successfully."

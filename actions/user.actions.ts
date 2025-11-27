@@ -18,7 +18,7 @@ export const signInWithCredentials = async (
       password: formData.get("password"),
     });
 
-    const res = await auth.api.signInEmail({
+    await auth.api.signInEmail({
       body: {
         email: user.email,
         password: user.password,
@@ -26,7 +26,6 @@ export const signInWithCredentials = async (
       },
       headers: await headers(),
     });
-    console.log(res.token)
 
     return { success: true, message: "signed in successfully.." };
   } catch (error) {
