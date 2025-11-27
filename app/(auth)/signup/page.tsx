@@ -5,6 +5,8 @@ import Image from "next/image";
 import {SignUpForm} from "@/app/(auth)/signup/signup-form";
 import {authClient} from "@/lib/auth-client";
 import {redirect} from "next/navigation";
+import {sanitizePath} from "@/utils/sanitize-url";
+import {auth} from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Sign Up"
@@ -13,17 +15,16 @@ export const metadata: Metadata = {
 const SignUpPage = async (
     props: {
       searchParams: Promise<{
-        callbackUrl: string
+        callback: string
       }>
     }
 ) => {
-  const { callbackUrl } = await props.searchParams;
+  const { callback } = await props.searchParams;
 
-  const session = await authClient.getSession();
-  console.log(session)
-  if (session.data) {
+  const session = await auth.api.getSession();
+  if (session) {
     // TODO: check safety..
-    redirect(callbackUrl || "/")
+    redirect(sanitizePath(callback))
   }
   return (
       <div className="w-full max-w-md mx-auto">
