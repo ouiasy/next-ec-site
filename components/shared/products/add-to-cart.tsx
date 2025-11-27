@@ -1,9 +1,10 @@
 "use client";
 import {Button} from "@/components/ui/button";
-import {CartItemType} from "@/types/cart";
+import {CartItemType} from "@/types/cart.type";
 import {AddItemToCart} from "@/actions/cart.actions";
 import {toast} from "sonner";
 import {useRouter} from "next/navigation";
+import {authClient} from "@/lib/auth-client";
 
 
 export const AddToCart = ({item}: {item: CartItemType}) => {
@@ -11,7 +12,7 @@ export const AddToCart = ({item}: {item: CartItemType}) => {
   const handleAddToCart = async () => {
     const res = await AddItemToCart(item)
     if (!res.success) {
-      toast.error("error occurred while adding to cart")
+      toast.error(res.message)
       return
     }
     toast.success(`${item.name} added to cart successfully `, {

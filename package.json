@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "better-schema": "@better-auth/cli generate --output db/schema/users.ts",
+    "better-schema": "pnpx @better-auth/cli generate --output db/schema/user.schema.ts",
     "drizzle-migrate": "drizzle-kit generate",
     "drizzle-apply": "drizzle-kit migrate"
   },

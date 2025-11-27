@@ -1,8 +1,8 @@
 import React from 'react';
 import {ProductCard} from "@/components/shared/products/product-card";
-import {Product} from "@/types/product";
+import {ProductType} from "@/types/product.type";
 
-const ProductsList = ({data, title, limit}: { data: Product[]; title?: string; limit?: number }) => {
+const ProductsList = ({data, title, limit}: { data: ProductType[]; title?: string; limit?: number }) => {
     const limitedData = limit ? data.slice(0, limit): data;
     return (
         <div className="py-10">
@@ -11,7 +11,7 @@ const ProductsList = ({data, title, limit}: { data: Product[]; title?: string; l
                 data.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                         {
-                            limitedData.map((product: Product) => (
+                            limitedData.map((product: ProductType) => (
                                 <ProductCard product={product} key={product.name}/>
                             ))
                         }

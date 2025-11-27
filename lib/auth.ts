@@ -5,6 +5,8 @@ import {nanoid} from "nanoid";
 import {SERVER_URL} from "@/lib/constants";
 import {nextCookies} from "better-auth/next-js";
 import {admin, anonymous, jwt} from "better-auth/plugins"
+import {carts} from "@/db/schema/cart.schema";
+import {eq} from "drizzle-orm";
 
 export const auth = betterAuth({
   baseURL: SERVER_URL,
@@ -32,6 +34,14 @@ export const auth = betterAuth({
     nextCookies(),
     jwt(),
     admin(),
-    anonymous(),
+    anonymous({
+      onLinkAccount: async ({ anonymousUser, newUser}) => {
+        // await db.update(carts)
+        //     .set({ userId: newUser.id })
+        //     .where(eq(carts.userId, anonymousUser.id))
+        //
+        // console.log(`Migrated cart from ${anonymousUser.id} to ${newUser.id}`)
+      }
+    })
   ]
 });

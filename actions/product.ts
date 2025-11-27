@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { desc, eq } from "drizzle-orm";
-import { products } from "@/db/schema/product";
+import { products } from "@/db/schema/product.schema";
 import { LATEST_PRODUCTS_LIMIT } from "@/lib/constants";
 
 export const getLatestProducts = async () => {

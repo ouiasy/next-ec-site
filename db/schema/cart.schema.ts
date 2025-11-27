@@ -1,15 +1,15 @@
 import {integer, sqliteTable, text} from "drizzle-orm/sqlite-core";
 import {nanoid} from "nanoid";
-import {sql} from "drizzle-orm";
-import {users} from "@/db/schema/users";
-import {products} from "@/db/schema/product";
+import {relations, sql} from "drizzle-orm";
+import {users} from "@/db/schema/user.schema";
+import {products} from "@/db/schema/product.schema";
 
 
 export const carts = sqliteTable("carts", {
   id: text()
       .primaryKey()
       .$defaultFn(() => nanoid()),
-  userId: text().notNull().references(() => users.id, {onDelete: "cascade"}),
+  userId: text().references(() => users.id, {onDelete: "cascade"}),
   createdAt: integer("created_at", {mode: "timestamp_ms"})
       .notNull()
       .default(sql`(unixepoch())`),
@@ -33,3 +33,23 @@ export const cartItems = sqliteTable("cart_items", {
       .notNull()
       .default(sql`(unixepoch())`),
 })
+
+
+export const cartsRelations = relations(carts, ({one, many}) => ({
+  user: one(users, {
+    fields: [carts.userId],
+    references: [users.id],
+  }),
+  cartItems: many(cartItems)
+}))
+
+export const cartItemsRelations = relations(cartItems, ({one}) => ({
+  cart: one(carts, {
+    fields: [cartItems.cartId],
+    references: [carts.id],
+  }),
+  product: one(products, {
+    fields: [cartItems.productId],
+    references: [products.id],
+  }),
+}))

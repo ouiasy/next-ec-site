@@ -1,8 +1,8 @@
-import {product} from "@/db/schema/product";
+import {product} from "@/db/schema/product.schema";
 import {insertProductSchema} from "@/types/zod/product";
 import {z} from "zod";
 
-export type Product = z.infer<typeof insertProductSchema> & {
+export type ProductType = z.infer<typeof insertProductSchema> & {
     id: string;
     rating: number;
     createdAt: Date;

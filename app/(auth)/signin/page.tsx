@@ -25,8 +25,7 @@ const SignInPage = async (
     headers: await headers(),
   });
   if (session) {
-    // TODO: check safety..
-    redirect(sanitizePath(callback) || "/")
+    redirect(sanitizePath(callback))
   }
   return (
       <div className="w-full max-w-md mx-auto">

@@ -1,6 +1,6 @@
 import "dotenv/config";
 import {seed} from "drizzle-seed";
-import {products} from "@/db/schema/product";
+import {products} from "@/db/schema/product.schema";
 import {db} from "@/db";
 
 const main = async () => {
