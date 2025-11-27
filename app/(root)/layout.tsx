@@ -12,11 +12,7 @@ export default function RootLayout({
       <Header />
       <main className="flex-1 container mx-auto">
         {children}
-        <Toaster
-            position="top-center"
-            richColors
-            duration={5000}
-        />
+
       </main>
       <Footer />
     </div>

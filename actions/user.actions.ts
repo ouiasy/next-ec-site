@@ -6,9 +6,10 @@ import { isRedirectError } from "next/dist/client/components/redirect-error";
 import {headers} from "next/headers";
 import {z} from "zod";
 import {APIError} from "better-auth/api";
+import {redirect} from "next/navigation";
 
 export const signInWithCredentials = async (
-  prevState: unknown,
+  prevState: {success: boolean, message: string} | null,
   formData: FormData,
 ) => {
   try {
@@ -17,13 +18,15 @@ export const signInWithCredentials = async (
       password: formData.get("password"),
     });
 
-    await auth.api.signInEmail({
+    const res = await auth.api.signInEmail({
       body: {
         email: user.email,
         password: user.password,
+        callbackURL: process.env.NEXT_PUBLIC_SERVER_URL
       },
       headers: await headers(),
     });
+    console.log(res.token)
 
     return { success: true, message: "signed in successfully.." };
   } catch (error) {
@@ -40,6 +43,7 @@ export const signOutUser = async () => {
   await auth.api.signOut({
     headers: await headers(),
   });
+  redirect("/")
 };
 
 

@@ -52,7 +52,7 @@ export const UserButton = async ()  => {
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuItem>
+            <DropdownMenuItem asChild>
               <form action={signOutUser}>
                 <Button variant="ghost">
                   Sign out

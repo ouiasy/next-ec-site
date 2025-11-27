@@ -7,32 +7,35 @@ import Link from "next/link";
 import {useActionState, useEffect} from "react";
 import {signInWithCredentials} from "@/actions/user.actions";
 import {useFormStatus} from "react-dom";
-import { toast } from "sonner"
-import {useSearchParams} from "next/navigation";
+import {toast} from "sonner"
+import {useRouter, useSearchParams} from "next/navigation";
+import {sanitizePath} from "@/utils/sanitize-url";
 
 
-export const SigninForm = () => {
-  const [data, action] = useActionState(signInWithCredentials, {
-    success: false,
-    message: ""
-  })
+export const SignInForm = () => {
+  const router = useRouter();
+  const [data, action] = useActionState(signInWithCredentials, null)
 
-  // TODO: need security fix...
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const callbackUrl = searchParams.get("callback") || "/";
 
   useEffect(() => {
-    if (data && !data.success && data.message) {
-      toast.error(data.message);
+    if (data) {
+      if (data.success) {
+        toast.success("logged in successfully")
+        router.push(sanitizePath(callbackUrl))
+      } else if (!data.success && data.message) {
+        toast.error(data.message);
+      }
     }
-  }, [data]);
+  }, [callbackUrl, data, router]);
 
   const SignInButton = () => {
-    const { pending } = useFormStatus();
+    const {pending} = useFormStatus();
 
     return (
         <Button disabled={pending} className="w-full " variant="default">
-          { pending ? "Signing In ..." : "SignIn"}
+          {pending ? "Signing In ..." : "SignIn"}
         </Button>
     )
   }
