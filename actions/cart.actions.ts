@@ -1,6 +1,6 @@
 "use server";
 
-import { CartItemType } from "@/types/cart.type";
+import { CartItemType, CartType } from "@/types/cart.type";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
@@ -9,6 +9,7 @@ import { cartItems, carts } from "@/db/schema/cart.schema";
 import { products } from "@/db/schema/product.schema";
 import { cartItemSchema } from "@/zod/cart.zod";
 import { z } from "zod";
+import { ProductType } from "@/types/product.type";
 
 export const AddItemToCart = async (
   item: CartItemType,
@@ -26,7 +27,7 @@ export const AddItemToCart = async (
         message: "product not found",
       };
     }
-    if (productInfo.stock! < validatedItem.qty) {
+    if (productInfo.stock! < validatedItem.qty!) {
       return {
         success: false,
         message: "quantity exceeds our stock",
@@ -71,7 +72,7 @@ export const AddItemToCart = async (
       .values({
         cartId: cart.id,
         productId: productInfo.id,
-        quantity: validatedItem.qty,
+        quantity: validatedItem.qty!,
       })
       .onConflictDoUpdate({
         target: [cartItems.cartId, cartItems.productId],
@@ -134,12 +135,78 @@ export const removeItemFromCart = async (
 
     return {
       success: true,
-      message: `successfully removed ${productName} from cart`,
+      message: ` ${productName} をカートから除きました`,
     };
   } catch (error) {
     return {
       success: false,
-      message: "unknown error",
+      message: "未知のエラーが生じました。",
+    };
+  }
+};
+
+interface GetCartItemsState {
+  success: boolean;
+  message?: string;
+  data: GetCartItemsData | null;
+}
+
+interface GetCartItemsData extends CartType {
+  cartItems: {
+    id: string;
+    cartId: string;
+    productId: string;
+    quantity: number;
+    addedAt: number;
+    product: ProductType;
+  }[];
+}
+
+export const getCartItems = async (): Promise<GetCartItemsState> => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (session === null) {
+      return {
+        success: false,
+        message: "ログインしてください。",
+        data: null,
+      };
+    }
+    const userId = session.user.id;
+
+    const res = await db.query.carts.findFirst({
+      where: eq(carts.userId, userId),
+      with: {
+        cartItems: {
+          with: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    if (res === undefined) {
+      return {
+        success: true,
+        message: "カートが見つかりませんでした。",
+        data: null,
+      };
+    }
+
+    console.log(res);
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (error) {
+    console.error("Failed to fetch cart items:", error);
+    return {
+      success: false,
+      message:
+        "データの取得中にエラーが発生しました。しばらく経ってから再試行してください。",
+      data: null,
     };
   }
 };
