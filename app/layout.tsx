@@ -1,48 +1,41 @@
-import type {Metadata} from "next";
-import {Inter} from "next/font/google";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import {APP_DESCRIPTION, APP_NAME, SERVER_URL} from "@/lib/constants";
-import { ThemeProvider} from "next-themes";
-import {Toaster} from "@/components/ui/sonner";
+import { APP_DESCRIPTION, APP_NAME, SERVER_URL } from "@/lib/constants";
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
-    subsets: ["latin",]
-})
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-    title: {
-        template: `%s | E-Commerce`,
-        default: APP_NAME
-    },
-    description: APP_DESCRIPTION,
-    metadataBase: new URL(SERVER_URL)
+  title: {
+    template: `%s | E-Commerce`,
+    default: APP_NAME,
+  },
+  description: APP_DESCRIPTION,
+  metadataBase: new URL(SERVER_URL),
 };
 
 export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
-    children: React.ReactNode;
+  children,
+}: Readonly<{
+  children: React.ReactNode;
 }>) {
-    return (
-        <html lang="ja" suppressHydrationWarning>
-        <body
-            className={`${inter.className} antialiased`}
-        >
+  return (
+    <html lang="ja" suppressHydrationWarning>
+      <body className={`${inter.className} antialiased`}>
         <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
         >
-            {children}
-          <Toaster
-              position="top-center"
-              richColors
-              duration={5000}
-          />
+          {children}
+          <Toaster position="top-center" richColors duration={5000} />
         </ThemeProvider>
-
-        </body>
-        </html>
-    );
+      </body>
+    </html>
+  );
 }

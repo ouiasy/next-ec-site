@@ -1,49 +1,52 @@
-import {integer, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {nanoid} from "nanoid";
-import {relations, sql} from "drizzle-orm";
-import {users} from "@/db/schema/user.schema";
-import {products} from "@/db/schema/product.schema";
-
+import { integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
+import { nanoid } from "nanoid";
+import { relations, sql } from "drizzle-orm";
+import { users } from "@/db/schema/user.schema";
+import { products } from "@/db/schema/product.schema";
+import { table } from "console";
 
 export const carts = sqliteTable("carts", {
   id: text()
+    .primaryKey()
+    .$defaultFn(() => nanoid()),
+  userId: text().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+});
+
+export const cartItems = sqliteTable(
+  "cart_items",
+  {
+    id: text()
       .primaryKey()
       .$defaultFn(() => nanoid()),
-  userId: text().references(() => users.id, {onDelete: "cascade"}),
-  createdAt: integer("created_at", {mode: "timestamp_ms"})
+    cartId: text()
+      .notNull()
+      .references(() => carts.id, { onDelete: "cascade" }),
+    productId: text()
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    quantity: integer().notNull(),
+    addedAt: integer()
       .notNull()
       .default(sql`(unixepoch())`),
-  updatedAt: integer("created_at", {mode: "timestamp_ms"})
-      .notNull()
-      .default(sql`(unixepoch())`),
-})
+  },
+  (table) => [unique().on(table.cartId, table.productId)],
+);
 
-export const cartItems = sqliteTable("cart_items", {
-  id: text()
-      .primaryKey()
-      .$defaultFn(() => nanoid()),
-  cartId: text()
-      .notNull()
-      .references(() => carts.id, {onDelete: "cascade"}),
-  productId: text()
-      .notNull()
-      .references(() => products.id, {onDelete: "cascade"}),
-  quantity: integer().notNull(),
-  addedAt: integer()
-      .notNull()
-      .default(sql`(unixepoch())`),
-})
-
-
-export const cartsRelations = relations(carts, ({one, many}) => ({
+export const cartsRelations = relations(carts, ({ one, many }) => ({
   user: one(users, {
     fields: [carts.userId],
     references: [users.id],
   }),
-  cartItems: many(cartItems)
-}))
+  cartItems: many(cartItems),
+}));
 
-export const cartItemsRelations = relations(cartItems, ({one}) => ({
+export const cartItemsRelations = relations(cartItems, ({ one }) => ({
   cart: one(carts, {
     fields: [cartItems.cartId],
     references: [carts.id],
@@ -52,4 +55,4 @@ export const cartItemsRelations = relations(cartItems, ({one}) => ({
     fields: [cartItems.productId],
     references: [products.id],
   }),
-}))
+}));
