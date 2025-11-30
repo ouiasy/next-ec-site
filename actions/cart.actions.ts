@@ -65,8 +65,6 @@ export const AddItemToCart = async (
       )[0];
     }
 
-    console.log(cart);
-
     // update cart
     await db
       .insert(cartItems)
@@ -101,5 +99,47 @@ export const AddItemToCart = async (
         message: "unknown error",
       };
     }
+  }
+};
+
+export const removeItemFromCart = async (
+  productId: string,
+  productName: string,
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const session = await auth.api.getSession();
+    if (session === null) {
+      return {
+        success: false,
+        message: "should login first..",
+      };
+    }
+    const userId = session.user.id;
+
+    // get cartId
+    const cart = await db.query.carts.findFirst({
+      where: eq(carts.userId, userId),
+    });
+    if (cart === undefined) {
+      return {
+        success: false,
+        message: "cart not found",
+      };
+    }
+
+    // remove cartItem
+    const res = await db
+      .delete(cartItems)
+      .where(eq(cartItems.productId, productId));
+
+    return {
+      success: true,
+      message: `successfully removed ${productName} from cart`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "unknown error",
+    };
   }
 };
