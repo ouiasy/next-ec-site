@@ -4,14 +4,13 @@ import { CartItemType } from "@/types/cart.type";
 import { AddItemToCart } from "@/actions/cart.actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -19,28 +18,31 @@ import {
 export const AddToCart = ({ item }: { item: CartItemType }) => {
   const [quantity, setQuantity] = useState<number | undefined>(undefined);
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const handleAddToCart = async () => {
-    if (quantity === undefined) {
-      toast.error("select quantity to add");
-      return;
-    }
-    const addItem: CartItemType = {
-      ...item,
-      qty: quantity,
-    };
-    const res = await AddItemToCart(addItem);
-    if (!res.success) {
-      toast.error(res.message);
-      return;
-    }
-    toast.success(`${item.name} added to cart successfully `, {
-      action: {
-        label: "Go To Cart",
-        onClick: () => router.push("/cart"),
-      },
-      classNames: {
-        actionButton: "p-4",
-      },
+    startTransition(async () => {
+      if (quantity === undefined) {
+        toast.error("select quantity to add");
+        return;
+      }
+      const addItem: CartItemType = {
+        ...item,
+        qty: quantity,
+      };
+      const res = await AddItemToCart(addItem);
+      if (!res.success) {
+        toast.error(res.message);
+        return;
+      }
+      toast.success(`${item.name} added to cart successfully `, {
+        action: {
+          label: "Go To Cart",
+          onClick: () => router.push("/cart"),
+        },
+        classNames: {
+          actionButton: "p-4",
+        },
+      });
     });
   };
   return (
@@ -63,7 +65,7 @@ export const AddToCart = ({ item }: { item: CartItemType }) => {
         </SelectContent>
       </Select>
       <Button className="w-full" variant="outline" onClick={handleAddToCart}>
-        Add to Cart
+        {isPending ? <Spinner /> : "Add to Cart"}
       </Button>
     </div>
   );
