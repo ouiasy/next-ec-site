@@ -2,10 +2,10 @@ import { integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
 import { nanoid } from "nanoid";
 import { relations, sql } from "drizzle-orm";
 import { users } from "@/db/schema/user.schema";
-import { products } from "@/db/schema/product.schema";
+import { productTable } from "@/db/schema/product.schema";
 
 
-export const carts = sqliteTable("carts", {
+export const cartTable = sqliteTable("carts", {
   id: text()
     .primaryKey()
     .$defaultFn(() => nanoid()),
@@ -18,7 +18,7 @@ export const carts = sqliteTable("carts", {
     .default(sql`(unixepoch())`),
 });
 
-export const cartItems = sqliteTable(
+export const cartItemTable = sqliteTable(
   "cart_items",
   {
     id: text()
@@ -26,10 +26,10 @@ export const cartItems = sqliteTable(
       .$defaultFn(() => nanoid()),
     cartId: text()
       .notNull()
-      .references(() => carts.id, { onDelete: "cascade" }),
+      .references(() => cartTable.id, { onDelete: "cascade" }),
     productId: text()
       .notNull()
-      .references(() => products.id, { onDelete: "cascade" }),
+      .references(() => productTable.id, { onDelete: "cascade" }),
     quantity: integer().notNull(),
     addedAt: integer()
       .notNull()
@@ -38,21 +38,21 @@ export const cartItems = sqliteTable(
   (table) => [unique().on(table.cartId, table.productId)],
 );
 
-export const cartsRelations = relations(carts, ({ one, many }) => ({
+export const cartsRelations = relations(cartTable, ({ one, many }) => ({
   user: one(users, {
-    fields: [carts.userId],
+    fields: [cartTable.userId],
     references: [users.id],
   }),
-  cartItems: many(cartItems),
+  cartItems: many(cartItemTable),
 }));
 
-export const cartItemsRelations = relations(cartItems, ({ one }) => ({
-  cart: one(carts, {
-    fields: [cartItems.cartId],
-    references: [carts.id],
+export const cartItemsRelations = relations(cartItemTable, ({ one }) => ({
+  cart: one(cartTable, {
+    fields: [cartItemTable.cartId],
+    references: [cartTable.id],
   }),
-  product: one(products, {
-    fields: [cartItems.productId],
-    references: [products.id],
+  product: one(productTable, {
+    fields: [cartItemTable.productId],
+    references: [productTable.id],
   }),
 }));

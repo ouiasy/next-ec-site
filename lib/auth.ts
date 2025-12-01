@@ -5,7 +5,7 @@ import {nanoid} from "nanoid";
 import {SERVER_URL} from "@/lib/constants";
 import {nextCookies} from "better-auth/next-js";
 import {admin, anonymous, jwt} from "better-auth/plugins"
-import {carts} from "@/db/schema/cart.schema";
+import {cartTable} from "@/db/schema/cart.schema";
 import {eq} from "drizzle-orm";
 
 export const auth = betterAuth({
