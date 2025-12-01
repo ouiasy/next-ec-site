@@ -9,7 +9,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { signOutUser } from "@/actions/user.actions";
 import { headers } from "next/headers";
 import { LogoutButton } from "@/components/shared/header/logout-button";
 
@@ -21,7 +20,7 @@ export const UserButton = async () => {
     return (
       <Button asChild variant={"outline"}>
         <Link href="/signin">
-          <UserIcon /> SignIn
+          <UserIcon /> ログイン
         </Link>
       </Button>
     );

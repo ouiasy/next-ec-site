@@ -24,13 +24,13 @@ export const AddItemToCart = async (
     if (productInfo == undefined) {
       return {
         success: false,
-        message: "product not found",
+        message: "該当の商品が見つかりません。",
       };
     }
     if (productInfo.stock! < validatedItem.qty!) {
       return {
         success: false,
-        message: "quantity exceeds our stock",
+        message: "数量が在庫数を超えています。",
       };
     }
 
@@ -46,7 +46,7 @@ export const AddItemToCart = async (
       if (session == null) {
         return {
           success: false,
-          message: "error creating an anonymous user..",
+          message: "ゲストユーザーの作成に失敗しました。",
         };
       }
       userId = session.user.id;
@@ -81,7 +81,7 @@ export const AddItemToCart = async (
 
     return {
       success: true,
-      message: "added to cart successfully.",
+      message: "カートにアイテムを追加しました。",
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -97,7 +97,7 @@ export const AddItemToCart = async (
     } else {
       return {
         success: false,
-        message: "unknown error",
+        message: "未定義のエラー",
       };
     }
   }
@@ -112,7 +112,7 @@ export const removeItemFromCart = async (
     if (session === null) {
       return {
         success: false,
-        message: "should login first..",
+        message: "最初にログインしてください",
       };
     }
     const userId = session.user.id;
@@ -124,7 +124,7 @@ export const removeItemFromCart = async (
     if (cart === undefined) {
       return {
         success: false,
-        message: "cart not found",
+        message: "",
       };
     }
 
@@ -140,18 +140,18 @@ export const removeItemFromCart = async (
   } catch (error) {
     return {
       success: false,
-      message: "未知のエラーが生じました。",
+      message: "未定義のエラー",
     };
   }
 };
 
-interface GetCartItemsState {
+type GetCartItemsState = {
   success: boolean;
   message?: string;
   data: GetCartItemsData | null;
-}
+};
 
-interface GetCartItemsData extends CartType {
+type GetCartItemsData = CartType & {
   cartItems: {
     id: string;
     cartId: string;
@@ -160,7 +160,7 @@ interface GetCartItemsData extends CartType {
     addedAt: number;
     product: ProductType;
   }[];
-}
+};
 
 export const getCartItems = async (): Promise<GetCartItemsState> => {
   try {
@@ -170,7 +170,7 @@ export const getCartItems = async (): Promise<GetCartItemsState> => {
     if (session === null) {
       return {
         success: false,
-        message: "ログインしてください。",
+        message: "ログインしてください",
         data: null,
       };
     }
@@ -190,12 +190,11 @@ export const getCartItems = async (): Promise<GetCartItemsState> => {
     if (res === undefined) {
       return {
         success: true,
-        message: "カートが見つかりませんでした。",
+        message: "カートが見つかりませんでした",
         data: null,
       };
     }
 
-    console.log(res);
     return {
       success: true,
       data: res,

@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import { relations, sql } from "drizzle-orm";
 import { users } from "@/db/schema/user.schema";
 import { products } from "@/db/schema/product.schema";
-import { table } from "console";
+
 
 export const carts = sqliteTable("carts", {
   id: text()

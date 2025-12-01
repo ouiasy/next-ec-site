@@ -3,6 +3,6 @@ import { insertCartSchema, cartItemSchema } from "@/zod/cart.zod";
 import { InferSelectModel } from "drizzle-orm";
 import { z } from "zod";
 
-export type CartItemType = z.infer<typeof cartItemSchema>;
+export type CartItemType  = z.infer<typeof cartItemSchema>;
 export type InsertToCartType = z.infer<typeof insertCartSchema>;
 export type CartType = InferSelectModel<typeof carts>;
