@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import ProductImages from "@/components/shared/products/product-images";
 import { formatJapaneseYen } from "@/utils/process-price";
-import { AddToCart } from "@/components/shared/products/add-to-cart";
+import { AddToCart } from "@/app/(root)/product/[slug]/add-to-cart";
 
 async function ProductDetail({
   params,

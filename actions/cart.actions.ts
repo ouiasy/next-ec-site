@@ -1,6 +1,6 @@
 "use server";
 
-import { CartItemType, CartType } from "@/types/cart.type";
+import { CartItemPayload, CartType } from "@/types/cart.type";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
@@ -12,7 +12,7 @@ import { z } from "zod";
 import { ProductType } from "@/types/product.type";
 
 export const AddItemToCart = async (
-  item: CartItemType,
+  item: CartItemPayload,
 ): Promise<{ success: boolean; message: string }> => {
   try {
     const validatedItem = cartItemSchema.parse(item);
@@ -145,7 +145,7 @@ export const removeItemFromCart = async (
   }
 };
 
-type GetCartItemsState = {
+type GetCartItemsResult = {
   success: boolean;
   message?: string;
   data: GetCartItemsData | null;
@@ -162,7 +162,7 @@ type GetCartItemsData = CartType & {
   }[];
 };
 
-export const getCartItems = async (): Promise<GetCartItemsState> => {
+export const getCartItems = async (): Promise<GetCartItemsResult> => {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),

@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { CartItemType } from "@/types/cart.type";
+import { CartItemPayload } from "@/types/cart.type";
 import { AddItemToCart } from "@/actions/cart.actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export const AddToCart = ({ item }: { item: CartItemType }) => {
+export const AddToCart = ({ item }: { item: CartItemPayload }) => {
   const [quantity, setQuantity] = useState<number | undefined>(undefined);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -25,7 +25,7 @@ export const AddToCart = ({ item }: { item: CartItemType }) => {
         toast.error("select quantity to add");
         return;
       }
-      const addItem: CartItemType = {
+      const addItem: CartItemPayload = {
         ...item,
         qty: quantity,
       };
