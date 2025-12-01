@@ -8,10 +8,12 @@ CREATE TABLE `cart_items` (
 	FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `cart_items_cartId_productId_unique` ON `cart_items` (`cart_id`,`product_id`);--> statement-breakpoint
 CREATE TABLE `carts` (
 	`id` text PRIMARY KEY NOT NULL,
-	`user_id` text NOT NULL,
+	`user_id` text,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
+	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -21,15 +23,16 @@ CREATE TABLE `products` (
 	`slug` text NOT NULL,
 	`category` text,
 	`description` text,
-	`images` text DEFAULT '[]',
+	`images` text DEFAULT (json_array()),
 	`price` integer DEFAULT 0 NOT NULL,
 	`brand` text,
 	`rating` real DEFAULT 0,
 	`num_reviews` integer DEFAULT 0,
-	`stock` integer,
+	`stock` integer DEFAULT 0,
 	`is_featured` integer DEFAULT false,
 	`banner` text,
-	`created_at` integer DEFAULT (unixepoch()) NOT NULL
+	`created_at` integer DEFAULT (unixepoch()
+                   ) NOT NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `products_slug_unique` ON `products` (`slug`);--> statement-breakpoint

@@ -5,11 +5,10 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
-import { cartItems, carts } from "@/db/schema/cart.schema";
-import { products } from "@/db/schema/product.schema";
 import { cartItemSchema } from "@/zod/cart.zod";
 import { z } from "zod";
 import { ProductType } from "@/types/product.type";
+import {cartItemsRelations, cartItemTable, cartTable} from "@/db/schema/cart.schema";
 
 export const AddItemToCart = async (
   item: CartItemPayload,
@@ -18,7 +17,7 @@ export const AddItemToCart = async (
     const validatedItem = cartItemSchema.parse(item);
 
     // stock check
-    const productInfo = await db.query.products.findFirst({
+    const productInfo = await db.query.productTable.findFirst({
       where: eq(products.id, validatedItem.productId),
     });
     if (productInfo == undefined) {
@@ -52,13 +51,13 @@ export const AddItemToCart = async (
       userId = session.user.id;
     }
 
-    let cart = await db.query.carts.findFirst({
-      where: eq(carts.userId, userId),
+    let cart = await db.query.cartTable.findFirst({
+      where: eq(cartTable.userId, userId),
     });
     if (cart == undefined) {
       cart = (
         await db
-          .insert(carts)
+          .insert(cartTable)
           .values({
             userId: userId,
           })
@@ -68,14 +67,14 @@ export const AddItemToCart = async (
 
     // update cart
     await db
-      .insert(cartItems)
+      .insert(cartItemTable)
       .values({
         cartId: cart.id,
         productId: productInfo.id,
         quantity: validatedItem.qty!,
       })
       .onConflictDoUpdate({
-        target: [cartItems.cartId, cartItems.productId],
+        target: [cartItemTable.cartId, cartItemTable.productId],
         set: { quantity: validatedItem.qty },
       });
 
@@ -118,8 +117,8 @@ export const removeItemFromCart = async (
     const userId = session.user.id;
 
     // get cartId
-    const cart = await db.query.carts.findFirst({
-      where: eq(carts.userId, userId),
+    const cart = await db.query.cartTable.findFirst({
+      where: eq(cartTable.userId, userId),
     });
     if (cart === undefined) {
       return {
@@ -130,8 +129,8 @@ export const removeItemFromCart = async (
 
     // remove cartItem
     const res = await db
-      .delete(cartItems)
-      .where(eq(cartItems.productId, productId));
+      .delete(cartItemTable)
+      .where(eq(cartItemTable.productId, productId));
 
     return {
       success: true,
@@ -176,8 +175,8 @@ export const getCartItems = async (): Promise<GetCartItemsResult> => {
     }
     const userId = session.user.id;
 
-    const res = await db.query.carts.findFirst({
-      where: eq(carts.userId, userId),
+    const res = await db.query.cartTable.findFirst({
+      where: eq(cartTable.userId, userId),
       with: {
         cartItems: {
           with: {

@@ -10,7 +10,15 @@ const Home =  async () => {
     const products = await getLatestProducts();
     return (
         <>
-            <ProductsList data={products} title={"test"} limit={4}/>
+          {
+            products ?
+                <ProductsList data={products} title={"test"} limit={4}/> : (
+                <div className="flex flex-col justify-center h-full text-center">
+                  <p className="text-4xl">Products Not Found</p>
+                </div>
+            )
+          }
+
         </>
     );
 };
