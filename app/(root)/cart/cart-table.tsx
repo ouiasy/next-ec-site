@@ -1,5 +1,9 @@
 "use client";
-import { GetCartItemsData } from "@/actions/cart.actions";
+import {
+  addOneItemToCart,
+  GetCartItemsData,
+  removeOneItemFromCart,
+} from "@/actions/cart.actions";
 import {
   Table,
   TableBody,
@@ -10,10 +14,13 @@ import {
 } from "@/components/ui/table";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Divide } from "lucide-react";
 import { formatJapaneseYen } from "@/utils/process-price";
 import Link from "next/link";
 import { useTransition } from "react";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 
 export type CartProps = {
   items: GetCartItemsData["cartItems"];
@@ -21,15 +28,23 @@ export type CartProps = {
 
 export const CartTable = ({ items }: CartProps) => {
   const [isPending, startTransition] = useTransition();
-  const handleDecreaseButton = () =>
+  const handleDecreaseButton = (productId: string) =>
     startTransition(async () => {
-      // remove item server actions
+      const res = await removeOneItemFromCart(productId);
       // if not success show error toast.
+      if (!res.success) {
+        toast.error("カートから商品を取り除くのに失敗しました。");
+        return;
+      }
     });
-  const handleAddButton = () =>
+  const handleAddButton = (productId: string) =>
     startTransition(async () => {
-      // remove item server actions
-      // if not success show error toast.
+      const res = await addOneItemToCart(productId);
+      console.log(res);
+      if (!res.success) {
+        toast.error("カートに商品を追加するのに失敗しました");
+        return;
+      }
     });
   return (
     <Table className="overflow-x-scroll">
@@ -59,19 +74,33 @@ export const CartTable = ({ items }: CartProps) => {
                   <span className="text-xl">{item.product.name}</span>
                 </Link>
               </TableCell>
-              <TableCell>
+              <TableCell className="flex items-center">
                 <Button
                   className="cursor-pointer"
-                  onClick={handleDecreaseButton}
+                  disabled={isPending}
+                  onClick={() => handleDecreaseButton(item.productId)}
                 >
                   <Minus className="" />
                 </Button>
-                <span className="p-2 text-xl">{item.quantity}</span>
-                <Button className="cursor-pointer" onClick={handleAddButton}>
+                <div className="w-8 text-center">
+                  {isPending ? (
+                    <Spinner className="mx-auto" />
+                  ) : (
+                    <div>
+                      <span className="text-xl">{item.quantity}</span>
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  className="cursor-pointer"
+                  disabled={isPending}
+                  onClick={() => handleAddButton(item.productId)}
+                >
                   <Plus />
                 </Button>
               </TableCell>
-              <TableCell>
+              <TableCell className="">
                 <span className="text-xl">
                   {formatJapaneseYen(item.product.price)}
                 </span>

@@ -9,8 +9,9 @@ import { cartItemTable, cartTable } from "@/db/schema/cart.schema";
 import { productTable } from "@/db/schema/product.schema";
 import { SelectProductTable } from "@/types/dabatase/product.types";
 import { sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
-export const AddOneItemToCart = async (productId: string) => {
+export const addOneItemToCart = async (productId: string) => {
   try {
     const productInfo = await db.query.productTable.findFirst({
       where: eq(productTable.id, productId),
@@ -61,6 +62,15 @@ export const AddOneItemToCart = async (productId: string) => {
         message: "商品の数が在庫数を超えてしまいます",
       };
     }
+
+    await db
+      .update(cartItemTable)
+      .set({
+        quantity: sql`${cartItemTable.quantity} + 1`,
+      })
+      .where(eq(cartItemTable.id, cartItem.id));
+
+    revalidatePath("/cart");
 
     return {
       success: true,
@@ -194,6 +204,8 @@ export const removeOneItemFromCart = async (productId: string) => {
         quantity: sql`${cartItemTable.quantity} -1`,
       })
       .where(eq(cartItemTable.productId, productId));
+
+    revalidatePath("/cart");
 
     return {
       success: true,
