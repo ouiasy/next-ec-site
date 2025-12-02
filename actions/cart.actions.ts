@@ -1,16 +1,78 @@
 "use server";
 
-import { CartItemPayload } from "@/types/schema/cart.type";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { eq } from "drizzle-orm";
-import { cartItemSchema } from "@/zod/cart.zod";
+import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { cartItemTable, cartTable } from "@/db/schema/cart.schema";
 import { productTable } from "@/db/schema/product.schema";
 import { SelectProductTable } from "@/types/dabatase/product.types";
 import { sql } from "drizzle-orm";
+
+export const AddOneItemToCart = async (productId: string) => {
+  try {
+    const productInfo = await db.query.productTable.findFirst({
+      where: eq(productTable.id, productId),
+    });
+    if (productInfo === undefined) {
+      return {
+        success: false,
+        messsage: "商品が見つかりませんでした",
+      };
+    }
+
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (session === null) {
+      return {
+        success: false,
+        message: "ユーザーが見つかりません。ログインしてください。",
+      };
+    }
+
+    const cart = await db.query.cartTable.findFirst({
+      where: eq(cartTable.userId, session.user.id),
+    });
+    if (cart === undefined) {
+      return {
+        success: false,
+        message: "カートが見つかりませんでした",
+      };
+    }
+
+    const cartItem = await db.query.cartItemTable.findFirst({
+      where: and(
+        eq(cartItemTable.cartId, cart.id),
+        eq(cartItemTable.productId, productInfo.id),
+      ),
+    });
+    if (cartItem === undefined) {
+      return {
+        success: false,
+        message: "カートに該当の商品がありません",
+      };
+    }
+
+    if (cartItem.quantity + 1 > productInfo.stock) {
+      return {
+        success: false,
+        message: "商品の数が在庫数を超えてしまいます",
+      };
+    }
+
+    return {
+      success: true,
+      message: "該当の商品を1つ追加しました。",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "カートに商品を追加できませんでした",
+    };
+  }
+};
 
 export const AddItemToCart = async (
   productId: string,
@@ -132,6 +194,11 @@ export const removeOneItemFromCart = async (productId: string) => {
         quantity: sql`${cartItemTable.quantity} -1`,
       })
       .where(eq(cartItemTable.productId, productId));
+
+    return {
+      success: true,
+      message: `カートから商品を一つ取り出しました`,
+    };
   } catch (error) {
     return {
       success: false,
