@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { nanoid } from "nanoid";
 
-export const products = sqliteTable("products", {
+export const productTable = sqliteTable("products", {
   id: text()
     .primaryKey()
     .$defaultFn(() => nanoid()),
@@ -12,15 +12,16 @@ export const products = sqliteTable("products", {
   description: text(),
   images: text({ mode: "json" })
     .$type<string[]>()
-    .default(sql`'[]'`),
+    .default(sql`(json_array())`)
+    .notNull(),
   price: integer().notNull().default(0),
   brand: text(),
   rating: real().default(0),
   numReviews: integer().default(0),
-  stock: integer().default(0),
+  stock: integer().default(0).notNull(),
   isFeatured: integer({ mode: "boolean" }).default(false),
   banner: text(),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .notNull()
-    .default(sql`(unixepoch())`),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull()
+    .default(sql`(unixepoch()
+                   )`),
 });

@@ -1,28 +1,41 @@
 import "dotenv/config";
 import {seed} from "drizzle-seed";
-import {products} from "@/db/schema/product.schema";
+import {productTable} from "@/db/schema/product.schema";
 import {db} from "@/db";
 
 const main = async () => {
   try {
-    await db.delete(products);
-    await seed(db, {products}).refine((f) => ({
-      products: {
+    await db.delete(productTable);
+    await seed(db, {productTable}).refine((f) => ({
+      productTable: {
         count: 10,
         columns: {
           name: f.string(),
           slug: f.string({isUnique: true}),
           category: f.string(),
-          description: f.string({arraySize: 50}),
+          description: f.string(),
           images: f.valuesFromArray({
             values: [
-              '["/images/sample-products/p1-1.jpg","/images/sample-products/p1-2.jpg"]',
-              '["/images/sample-products/p2-1.jpg","/images/sample-products/p2-2.jpg"]',
-              '["/images/sample-products/p3-1.jpg","/images/sample-products/p3-2.jpg"]',
-              '["/images/sample-products/p4-1.jpg","/images/sample-products/p4-2.jpg"]',
-              '["/images/sample-products/p5-1.jpg","/images/sample-products/p5-2.jpg"]',
-              '["/images/sample-products/p6-1.jpg","/images/sample-products/p6-2.jpg"]',
+              "/images/sample-products/p1-1.jpg",
+              "/images/sample-products/p1-2.jpg",
+              "/images/sample-products/p2-1.jpg",
+              "/images/sample-products/p2-2.jpg",
+              "/images/sample-products/p3-1.jpg",
+              "/images/sample-products/p3-2.jpg",
+              "/images/sample-products/p4-1.jpg",
+              "/images/sample-products/p4-2.jpg",
+              "/images/sample-products/p5-1.jpg",
+              "/images/sample-products/p5-2.jpg",
+              "/images/sample-products/p6-1.jpg",
+              "/images/sample-products/p6-2.jpg",
+              // '["/images/sample-products/p1-1.jpg","/images/sample-products/p1-2.jpg"]',
+              // '["/images/sample-products/p2-1.jpg","/images/sample-products/p2-2.jpg"]',
+              // '["/images/sample-products/p3-1.jpg","/images/sample-products/p3-2.jpg"]',
+              // '["/images/sample-products/p4-1.jpg","/images/sample-products/p4-2.jpg"]',
+              // '["/images/sample-products/p5-1.jpg","/images/sample-products/p5-2.jpg"]',
+              // '["/images/sample-products/p6-1.jpg","/images/sample-products/p6-2.jpg"]',
             ],
+            arraySize: 2,
           }),
           price: f.int({
             minValue: 1000,

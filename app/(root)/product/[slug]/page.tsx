@@ -1,10 +1,10 @@
-import { getProductBySlug } from "@/actions/product";
+import { getProductBySlug } from "@/actions/product.actions";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import ProductImages from "@/components/shared/products/product-images";
+import ProductImages from "@/app/(root)/product/[slug]/product-images";
 import { formatJapaneseYen } from "@/utils/process-price";
-import { AddToCart } from "@/app/(root)/product/[slug]/add-to-cart";
+import { AddToCartCard } from "@/app/(root)/product/[slug]/add-to-cart";
 
 async function ProductDetail({
   params,
@@ -13,13 +13,13 @@ async function ProductDetail({
 }) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
-  if (!product) notFound();
+  if (product === null) notFound();
 
   return (
     <section className="mt-10">
       <div className="grid grid-cols-1 md:grid-cols-5">
         <div className="col-span-2">
-          <ProductImages images={product.images!} />
+          <ProductImages images={product.images} />
         </div>
         <div className="col-span-2 p-5 items-center">
           <div className="flex flex-col gap-6">
@@ -70,7 +70,7 @@ async function ProductDetail({
               </div>
               <div>
                 {product.stock! > 0 && (
-                  <AddToCart
+                  <AddToCartCard
                     item={{
                       productId: product.id,
                       name: product.name,

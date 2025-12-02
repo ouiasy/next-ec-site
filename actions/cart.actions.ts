@@ -1,33 +1,34 @@
 "use server";
 
-import { CartItemPayload, CartType } from "@/types/cart.type";
+import { CartItemPayload } from "@/types/schema/cart.type";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
-import { cartItems, carts } from "@/db/schema/cart.schema";
-import { products } from "@/db/schema/product.schema";
 import { cartItemSchema } from "@/zod/cart.zod";
 import { z } from "zod";
-import { ProductType } from "@/types/product.type";
+import { cartItemTable, cartTable } from "@/db/schema/cart.schema";
+import { productTable } from "@/db/schema/product.schema";
+import { SelectProductTable } from "@/types/dabatase/product.types";
+import { sql } from "drizzle-orm";
 
 export const AddItemToCart = async (
-  item: CartItemPayload,
+  productId: string,
+  quantity: number,
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    const validatedItem = cartItemSchema.parse(item);
-
     // stock check
-    const productInfo = await db.query.products.findFirst({
-      where: eq(products.id, validatedItem.productId),
-    });
-    if (productInfo == undefined) {
+    const productInfo: SelectProductTable | undefined =
+      await db.query.productTable.findFirst({
+        where: eq(productTable.id, productId),
+      });
+    if (productInfo === undefined) {
       return {
         success: false,
         message: "該当の商品が見つかりません。",
       };
     }
-    if (productInfo.stock! < validatedItem.qty!) {
+    if (productInfo.stock < quantity) {
       return {
         success: false,
         message: "数量が在庫数を超えています。",
@@ -52,13 +53,13 @@ export const AddItemToCart = async (
       userId = session.user.id;
     }
 
-    let cart = await db.query.carts.findFirst({
-      where: eq(carts.userId, userId),
+    let cart = await db.query.cartTable.findFirst({
+      where: eq(cartTable.userId, userId),
     });
     if (cart == undefined) {
       cart = (
         await db
-          .insert(carts)
+          .insert(cartTable)
           .values({
             userId: userId,
           })
@@ -68,15 +69,15 @@ export const AddItemToCart = async (
 
     // update cart
     await db
-      .insert(cartItems)
+      .insert(cartItemTable)
       .values({
         cartId: cart.id,
         productId: productInfo.id,
-        quantity: validatedItem.qty!,
+        quantity: quantity,
       })
       .onConflictDoUpdate({
-        target: [cartItems.cartId, cartItems.productId],
-        set: { quantity: validatedItem.qty },
+        target: [cartItemTable.cartId, cartItemTable.productId],
+        set: { quantity: quantity },
       });
 
     return {
@@ -103,6 +104,39 @@ export const AddItemToCart = async (
   }
 };
 
+export const removeOneItemFromCart = async (productId: string) => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (session === null) {
+      return {
+        success: false,
+        message: "最初にログインしてください",
+      };
+    }
+
+    const cart = await db.query.cartTable.findFirst({
+      where: eq(cartTable.userId, session.user.id),
+    });
+    if (cart === undefined) {
+      return {
+        success: false,
+        message: "カートが見つかりませんでした",
+      };
+    }
+
+    await db.update(cartItemTable).set({
+      quantity: sql`${cartItemTable.quantity} -1`,
+    });
+  } catch (error) {
+    return {
+      success: false,
+      message: "カートから取り除くことに失敗しました",
+    };
+  }
+};
+
 export const removeItemFromCart = async (
   productId: string,
   productName: string,
@@ -118,20 +152,20 @@ export const removeItemFromCart = async (
     const userId = session.user.id;
 
     // get cartId
-    const cart = await db.query.carts.findFirst({
-      where: eq(carts.userId, userId),
+    const cart = await db.query.cartTable.findFirst({
+      where: eq(cartTable.userId, userId),
     });
     if (cart === undefined) {
       return {
         success: false,
-        message: "",
+        message: "カートがありません。",
       };
     }
 
     // remove cartItem
     const res = await db
-      .delete(cartItems)
-      .where(eq(cartItems.productId, productId));
+      .delete(cartItemTable)
+      .where(eq(cartItemTable.productId, productId));
 
     return {
       success: true,
@@ -151,14 +185,18 @@ type GetCartItemsResult = {
   data: GetCartItemsData | null;
 };
 
-type GetCartItemsData = CartType & {
+export type GetCartItemsData = {
+  id: string;
+  userId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
   cartItems: {
     id: string;
     cartId: string;
     productId: string;
     quantity: number;
     addedAt: number;
-    product: ProductType;
+    product: SelectProductTable;
   }[];
 };
 
@@ -176,8 +214,8 @@ export const getCartItems = async (): Promise<GetCartItemsResult> => {
     }
     const userId = session.user.id;
 
-    const res = await db.query.carts.findFirst({
-      where: eq(carts.userId, userId),
+    const res = await db.query.cartTable.findFirst({
+      where: eq(cartTable.userId, userId),
       with: {
         cartItems: {
           with: {

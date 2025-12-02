@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { CartItemPayload } from "@/types/cart.type";
+import { CartItemPayload } from "@/types/schema/cart.type";
 import { AddItemToCart } from "@/actions/cart.actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -15,26 +15,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export const AddToCart = ({ item }: { item: CartItemPayload }) => {
+export const AddToCartCard = ({ item }: { item: CartItemPayload }) => {
   const [quantity, setQuantity] = useState<number | undefined>(undefined);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const handleAddToCart = async () => {
     startTransition(async () => {
       if (quantity === undefined) {
-        toast.error("select quantity to add");
+        toast.error("数量を選択してください");
         return;
       }
-      const addItem: CartItemPayload = {
-        ...item,
-        qty: quantity,
-      };
-      const res = await AddItemToCart(addItem);
+      console.log(item.productId);
+      const res = await AddItemToCart(item.productId, quantity);
       if (!res.success) {
         toast.error(res.message);
         return;
       }
-      toast.success(`${item.name} added to cart successfully `, {
+      toast.success(`${item.name} がカートに入りました `, {
         action: {
           label: "Go To Cart",
           onClick: () => router.push("/cart"),
@@ -56,6 +53,7 @@ export const AddToCart = ({ item }: { item: CartItemPayload }) => {
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
+            {/*TODO : fix here*/}
             <SelectItem value="1">1</SelectItem>
             <SelectItem value="2">2</SelectItem>
             <SelectItem value="3">3</SelectItem>
@@ -65,7 +63,7 @@ export const AddToCart = ({ item }: { item: CartItemPayload }) => {
         </SelectContent>
       </Select>
       <Button className="w-full" variant="outline" onClick={handleAddToCart}>
-        {isPending ? <Spinner /> : "Add to Cart"}
+        {isPending ? <Spinner /> : "カートに入れる"}
       </Button>
     </div>
   );
