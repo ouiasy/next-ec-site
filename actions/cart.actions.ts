@@ -126,9 +126,12 @@ export const removeOneItemFromCart = async (productId: string) => {
       };
     }
 
-    await db.update(cartItemTable).set({
-      quantity: sql`${cartItemTable.quantity} -1`,
-    });
+    await db
+      .update(cartItemTable)
+      .set({
+        quantity: sql`${cartItemTable.quantity} -1`,
+      })
+      .where(eq(cartItemTable.productId, productId));
   } catch (error) {
     return {
       success: false,

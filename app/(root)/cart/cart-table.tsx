@@ -21,6 +21,11 @@ export type CartProps = {
 
 export const CartTable = ({ items }: CartProps) => {
   const [isPending, startTransition] = useTransition();
+  const handleDecreaseButton = () =>
+    startTransition(async () => {
+      // remove item server actions
+      // if not success show error toast.
+    });
   const handleAddButton = () =>
     startTransition(async () => {
       // remove item server actions
@@ -55,11 +60,14 @@ export const CartTable = ({ items }: CartProps) => {
                 </Link>
               </TableCell>
               <TableCell>
-                <Button className="cursor-pointer" onClick={handleAddButton}>
+                <Button
+                  className="cursor-pointer"
+                  onClick={handleDecreaseButton}
+                >
                   <Minus className="" />
                 </Button>
                 <span className="p-2 text-xl">{item.quantity}</span>
-                <Button className="cursor-pointer">
+                <Button className="cursor-pointer" onClick={handleAddButton}>
                   <Plus />
                 </Button>
               </TableCell>
