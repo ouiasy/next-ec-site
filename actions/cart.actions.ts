@@ -1,32 +1,35 @@
 "use server";
 
-import { CartItemPayload, CartType } from "@/types/cart.type";
+import { CartItemPayload } from "@/types/schema/cart.type";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
 import { cartItemSchema } from "@/zod/cart.zod";
 import { z } from "zod";
-import { ProductType } from "@/types/product.type";
-import {cartItemsRelations, cartItemTable, cartTable} from "@/db/schema/cart.schema";
+import { cartItemTable, cartTable } from "@/db/schema/cart.schema";
+import { productTable } from "@/db/schema/product.schema";
+import { SelectProductTable } from "@/types/dabatase/product.types";
 
 export const AddItemToCart = async (
   item: CartItemPayload,
+  quantity: number,
 ): Promise<{ success: boolean; message: string }> => {
   try {
     const validatedItem = cartItemSchema.parse(item);
 
     // stock check
-    const productInfo = await db.query.productTable.findFirst({
-      where: eq(products.id, validatedItem.productId),
-    });
-    if (productInfo == undefined) {
+    const productInfo: SelectProductTable | undefined =
+      await db.query.productTable.findFirst({
+        where: eq(productTable.id, validatedItem.productId),
+      });
+    if (productInfo === undefined) {
       return {
         success: false,
         message: "該当の商品が見つかりません。",
       };
     }
-    if (productInfo.stock! < validatedItem.qty!) {
+    if (productInfo.stock < quantity) {
       return {
         success: false,
         message: "数量が在庫数を超えています。",
@@ -71,11 +74,11 @@ export const AddItemToCart = async (
       .values({
         cartId: cart.id,
         productId: productInfo.id,
-        quantity: validatedItem.qty!,
+        quantity: quantity,
       })
       .onConflictDoUpdate({
         target: [cartItemTable.cartId, cartItemTable.productId],
-        set: { quantity: validatedItem.qty },
+        set: { quantity: quantity },
       });
 
     return {
@@ -150,14 +153,18 @@ type GetCartItemsResult = {
   data: GetCartItemsData | null;
 };
 
-type GetCartItemsData = CartType & {
+type GetCartItemsData = {
+  id: string;
+  userId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
   cartItems: {
     id: string;
     cartId: string;
     productId: string;
     quantity: number;
     addedAt: number;
-    product: ProductType;
+    product: SelectProductTable;
   }[];
 };
 

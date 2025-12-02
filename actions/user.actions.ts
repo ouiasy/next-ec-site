@@ -40,7 +40,7 @@ export const signInWithCredentials = async (
 };
 
 // sign user out.
-export const signOutUser = async () => {
+export const signOutUser = async (): Promise<{ success: boolean }> => {
   try {
     await auth.api.signOut({
       headers: await headers(),
@@ -55,7 +55,7 @@ export const signOutUser = async () => {
   }
 };
 
-export type SignUpState = {
+export type SignUpResult = {
   success: boolean;
   message?: string;
   fields?: Record<string, string>;
@@ -65,7 +65,7 @@ export type SignUpState = {
 export const signUpUser = async (
   previousState: unknown,
   formData: FormData,
-): Promise<SignUpState> => {
+): Promise<SignUpResult> => {
   try {
     const user = signUpFormSchema.parse({
       name: formData.get("name"),
