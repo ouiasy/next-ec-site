@@ -10,6 +10,7 @@ import { z } from "zod";
 import { cartItemTable, cartTable } from "@/db/schema/cart.schema";
 import { productTable } from "@/db/schema/product.schema";
 import { SelectProductTable } from "@/types/dabatase/product.types";
+import { sql } from "drizzle-orm";
 
 export const AddItemToCart = async (
   productId: string,
@@ -103,6 +104,39 @@ export const AddItemToCart = async (
   }
 };
 
+export const removeOneItemFromCart = async (productId: string) => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (session === null) {
+      return {
+        success: false,
+        message: "最初にログインしてください",
+      };
+    }
+
+    const cart = await db.query.cartTable.findFirst({
+      where: eq(cartTable.userId, session.user.id),
+    });
+    if (cart === undefined) {
+      return {
+        success: false,
+        message: "カートが見つかりませんでした",
+      };
+    }
+
+    await db.update(cartItemTable).set({
+      quantity: sql`${cartItemTable.quantity} -1`,
+    });
+  } catch (error) {
+    return {
+      success: false,
+      message: "カートから取り除くことに失敗しました",
+    };
+  }
+};
+
 export const removeItemFromCart = async (
   productId: string,
   productName: string,
@@ -124,7 +158,7 @@ export const removeItemFromCart = async (
     if (cart === undefined) {
       return {
         success: false,
-        message: "",
+        message: "カートがありません。",
       };
     }
 
@@ -151,7 +185,7 @@ type GetCartItemsResult = {
   data: GetCartItemsData | null;
 };
 
-type GetCartItemsData = {
+export type GetCartItemsData = {
   id: string;
   userId: string | null;
   createdAt: Date;
