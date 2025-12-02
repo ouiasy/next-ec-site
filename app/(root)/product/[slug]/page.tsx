@@ -2,7 +2,7 @@ import { getProductBySlug } from "@/actions/product.actions";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import ProductImages from "@/components/shared/products/product-images";
+import ProductImages from "@/app/(root)/product/[slug]/product-images";
 import { formatJapaneseYen } from "@/utils/process-price";
 import { AddToCartCard } from "@/app/(root)/product/[slug]/add-to-cart";
 

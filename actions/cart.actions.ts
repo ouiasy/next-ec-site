@@ -12,16 +12,14 @@ import { productTable } from "@/db/schema/product.schema";
 import { SelectProductTable } from "@/types/dabatase/product.types";
 
 export const AddItemToCart = async (
-  item: CartItemPayload,
+  productId: string,
   quantity: number,
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    const validatedItem = cartItemSchema.parse(item);
-
     // stock check
     const productInfo: SelectProductTable | undefined =
       await db.query.productTable.findFirst({
-        where: eq(productTable.id, validatedItem.productId),
+        where: eq(productTable.id, productId),
       });
     if (productInfo === undefined) {
       return {

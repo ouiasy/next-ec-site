@@ -25,7 +25,8 @@ export const AddToCartCard = ({ item }: { item: CartItemPayload }) => {
         toast.error("数量を選択してください");
         return;
       }
-      const res = await AddItemToCart(item, quantity);
+      console.log(item.productId);
+      const res = await AddItemToCart(item.productId, quantity);
       if (!res.success) {
         toast.error(res.message);
         return;

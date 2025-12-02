@@ -12,7 +12,7 @@ const ProductImages = ({ images }: { images: string[] }) => {
         alt="product image"
         width={1000}
         height={1000}
-        className="min-h-[300px] object-cover object-center"
+        className="min-h-[300px] object-cover object-center rounded-2xl"
       />
       <div className="flex">
         {images.map((image, index) => (
@@ -22,11 +22,17 @@ const ProductImages = ({ images }: { images: string[] }) => {
               setCurrent(index);
             }}
             className={cn(
-              "border-2 mr-2 cursor-pointer hover:border-orange-600 ",
+              "border-2 rounded-2xl mr-2 cursor-pointer hover:border-orange-600 ",
               current === index && "border-orange-500",
             )}
           >
-            <Image src={image} alt="image" width={100} height={100} />
+            <Image
+              src={image}
+              alt="image"
+              width={100}
+              height={100}
+              className="rounded-2xl"
+            />
           </div>
         ))}
       </div>
