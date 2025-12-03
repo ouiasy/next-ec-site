@@ -64,6 +64,7 @@ export const CartItemRow = ({ item }: { item: CartItemRowProps }) => {
           className="cursor-pointer"
           disabled={isPending}
           onClick={() => handleDecreaseButton(item.productId)}
+          variant="outline"
         >
           <Minus className="" />
         </Button>
@@ -80,6 +81,7 @@ export const CartItemRow = ({ item }: { item: CartItemRowProps }) => {
         <Button
           className="cursor-pointer"
           disabled={isPending}
+          variant="outline"
           onClick={() => handleAddButton(item.productId)}
         >
           <Plus />
