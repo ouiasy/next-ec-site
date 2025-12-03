@@ -1,26 +1,22 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CartProps } from "./cart-table";
-import React from "react";
+import { Button } from "@/components/ui/button";
+import { calculateSubtotal } from "@/utils/process-price";
+import { formatJapaneseYen } from "@/utils/process-price";
 
 export const TotalPriceCard = ({ items }: CartProps) => {
   return (
     <Card className="text-center w-full">
       <CardHeader>
-        <CardTitle className="text-xl">カート総計</CardTitle>
+        <CardTitle className="text-2xl">カート小計</CardTitle>
       </CardHeader>
       <CardContent className="">
-        {items.map((item) => {
-          return (
-            <React.Fragment key={item.id}>
-              <h3 key={item.id} className="text-left text-xl">
-                {item.product.name}
-              </h3>
-              <p></p>
-            </React.Fragment>
-          );
-        })}
-
-        <p>Card Content</p>
+        <h3 className="text-xl underline">小計</h3>
+        <div className="flex justify-between px-4 py-3 text-xl">
+          <p>3点</p>
+          <p>{formatJapaneseYen(calculateSubtotal(items))}</p>
+        </div>
+        <Button className="w-full cursor-pointer">チェックアウト</Button>
       </CardContent>
     </Card>
   );
