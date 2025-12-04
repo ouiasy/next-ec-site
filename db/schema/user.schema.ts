@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { addressTable } from "./address.schema";
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
@@ -101,9 +102,13 @@ export const jwkss = sqliteTable("jwkss", {
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
 });
 
-export const userRelations = relations(users, ({ many }) => ({
+export const userRelations = relations(users, ({ many, one }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
+  address: one(addressTable, {
+    fields: [users.id],
+    references: [addressTable.userId],
+  }),
 }));
 
 export const sessionRelations = relations(sessions, ({ one }) => ({

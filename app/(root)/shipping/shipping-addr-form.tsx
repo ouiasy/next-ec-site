@@ -7,41 +7,40 @@ import {
   SelectContent,
   SelectTrigger,
   SelectGroup,
-  SelectLabel,
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { MoveRight } from "lucide-react";
+import Link from "next/link";
 
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroupTextarea,
-} from "@/components/ui/input-group";
 import { shippingAddressSchema } from "@/zod/shipping-address.zod";
 import { handleShippingAddr } from "@/actions/shipping.actions";
 import { prefectures } from "@/zod/dataset/prefecture";
+import { addressTable } from "@/db/schema/address.schema";
 
-export function ShippingAddrForm() {
+export const ShippingAddrForm = ({
+  address,
+}: {
+  address: typeof addressTable.$inferSelect | undefined;
+}) => {
   const form = useForm<z.infer<typeof shippingAddressSchema>>({
     resolver: zodResolver(shippingAddressSchema),
     defaultValues: {
-      name: "",
-      postalCode: "",
-      prefecture: "",
-      city: "",
-      street: "",
-      building: "",
+      name: address?.name || "",
+      postalCode: address?.postalCode || "",
+      prefecture: address?.prefecture || "",
+      city: address?.city || "",
+      street: address?.street || "",
+      building: address?.building || "",
     },
   });
 
@@ -164,10 +163,17 @@ export function ShippingAddrForm() {
             </Field>
           )}
         />
-        <Button type="submit" form="shipping-addr">
-          Submit
+        <Button
+          type="submit"
+          form="shipping-addr"
+          className="cursor-pointer"
+          asChild
+        >
+          <Link href="/payment">
+            <MoveRight /> 支払い方法の選択
+          </Link>
         </Button>
       </FieldGroup>
     </form>
   );
-}
+};

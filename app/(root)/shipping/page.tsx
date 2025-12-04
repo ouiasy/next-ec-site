@@ -1,9 +1,12 @@
 import { ShippingAddrForm } from "./shipping-addr-form";
+import { findShippingAddr } from "@/actions/shipping.actions";
 
-const ShippingPage = () => {
+const ShippingPage = async () => {
+  const { data } = await findShippingAddr();
+
   return (
     <div>
-      <ShippingAddrForm />
+      <ShippingAddrForm address={data} />
     </div>
   );
 };

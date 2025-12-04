@@ -1,3 +1,16 @@
+CREATE TABLE `addresses` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`name` text NOT NULL,
+	`postal_code` text NOT NULL,
+	`prefecture` text NOT NULL,
+	`city` text NOT NULL,
+	`street` text NOT NULL,
+	`building` text,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `addresses_userId_unique` ON `addresses` (`user_id`);--> statement-breakpoint
 CREATE TABLE `cart_items` (
 	`id` text PRIMARY KEY NOT NULL,
 	`cart_id` text NOT NULL,
@@ -23,12 +36,12 @@ CREATE TABLE `products` (
 	`slug` text NOT NULL,
 	`category` text,
 	`description` text,
-	`images` text DEFAULT (json_array()),
+	`images` text DEFAULT (json_array()) NOT NULL,
 	`price` integer DEFAULT 0 NOT NULL,
 	`brand` text,
 	`rating` real DEFAULT 0,
 	`num_reviews` integer DEFAULT 0,
-	`stock` integer DEFAULT 0,
+	`stock` integer DEFAULT 0 NOT NULL,
 	`is_featured` integer DEFAULT false,
 	`banner` text,
 	`created_at` integer DEFAULT (unixepoch()
