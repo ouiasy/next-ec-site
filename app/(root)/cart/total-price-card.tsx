@@ -3,6 +3,8 @@ import { CartProps } from "./cart-table";
 import { Button } from "@/components/ui/button";
 import { calculateSubtotal } from "@/utils/process-price";
 import { formatJapaneseYen } from "@/utils/process-price";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export const TotalPriceCard = ({ items }: CartProps) => {
   return (
@@ -16,7 +18,12 @@ export const TotalPriceCard = ({ items }: CartProps) => {
           <p>3点</p>
           <p>{formatJapaneseYen(calculateSubtotal(items))}</p>
         </div>
-        <Button className="w-full cursor-pointer">チェックアウト</Button>
+        <Button className="w-full cursor-pointer items-center" asChild>
+          <Link href="/shipping">
+            <ArrowRight className="" />
+            チェックアウト
+          </Link>
+        </Button>
       </CardContent>
     </Card>
   );
