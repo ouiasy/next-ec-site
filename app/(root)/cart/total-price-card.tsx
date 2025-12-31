@@ -20,6 +20,7 @@ export const TotalPriceCard = ({ items }: CartProps) => {
           <p>{formatJapaneseYen(calculateSubtotal(items))}</p>
         </div>
         <Button className="w-full cursor-pointer items-center" asChild>
+          {/*todo: if user not logged in, go to login page*/}
           <Link href="/shipping">
             <ArrowRight className="" />
             チェックアウト
