@@ -1,7 +1,7 @@
 "use server";
 
 import { signInFormSchema, signUpFormSchema } from "@/zod/user.zod";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { headers } from "next/headers";
 import { z } from "zod";

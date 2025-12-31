@@ -9,7 +9,7 @@ import { signInWithCredentials } from "@/actions/user.actions";
 import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
-import { sanitizePath } from "@/utils/sanitize-url";
+import { sanitizePath } from "@/lib/utils/sanitize-url";
 
 export const SignInForm = () => {
   const router = useRouter();

@@ -10,8 +10,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { SignUpForm } from "@/app/(auth)/signup/signup-form";
 import { redirect } from "next/navigation";
-import { sanitizePath } from "@/utils/sanitize-url";
-import { auth } from "@/lib/auth";
+import { sanitizePath } from "@/lib/utils/sanitize-url";
+import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 
 export const metadata: Metadata = {

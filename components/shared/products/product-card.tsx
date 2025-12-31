@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
 import { ProductType } from "@/types/product.type";
-import { formatJapaneseYen } from "@/utils/process-price";
+import { formatJapaneseYen } from "@/lib/utils/process-price";
 
 export const ProductCard = ({ product }: { product: ProductType }) => {
   return (
