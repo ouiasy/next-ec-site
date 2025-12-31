@@ -28,7 +28,7 @@ const SignInPage = async (props: {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (session) {
+  if (session && !session.user.isAnonymous) {
     redirect(sanitizePath(callback));
   }
   return (

@@ -80,6 +80,7 @@ export const signUpUser = async (
         email: user.email,
         password: user.password,
       },
+      headers: await headers(),
     });
 
     return { success: true, message: "ユーザーの作成に成功しました" };

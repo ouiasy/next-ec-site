@@ -28,8 +28,7 @@ const SignUpPage = async (props: {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (session) {
-    // TODO: check safety..
+  if (session && !session.user.isAnonymous) {
     redirect(sanitizePath(callback));
   }
   return (

@@ -36,11 +36,15 @@ export const auth = betterAuth({
     admin(),
     anonymous({
       onLinkAccount: async ({ anonymousUser, newUser}) => {
-        // await db.update(carts)
-        //     .set({ userId: newUser.id })
-        //     .where(eq(carts.userId, anonymousUser.id))
-        //
-        // console.log(`Migrated cart from ${anonymousUser.id} to ${newUser.id}`)
+        try {
+          await db.update(cartTable)
+            .set({ userId: newUser.user.id })
+            .where(eq(cartTable.userId, anonymousUser.user.id))
+        } catch (e) {
+          console.log("error while migrating cart: ", e)
+        }
+
+        console.log(`Migrated cart from ${anonymousUser.user.id} to ${newUser.user.id}`)
       }
     })
   ]
