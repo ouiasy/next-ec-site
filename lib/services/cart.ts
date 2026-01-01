@@ -62,8 +62,8 @@ export const mergeAnonymousCart =
           }
         })
 
+      await db.delete(cartTable).where(eq(cartTable.userId, anonymousUserId))
 
-      // anonymousIdが紐づいているitemの削除(userとcascadeで紐づいていない場合)
     } catch (e) {
       throw e
     }
