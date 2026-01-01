@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 import { Button } from "@/components/ui/button";
 import { UserIcon } from "lucide-react";
 import {

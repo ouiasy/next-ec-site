@@ -10,7 +10,7 @@ import {
   removeOneItemFromCart,
   addOneItemToCart,
 } from "@/actions/cart.actions";
-import { formatJapaneseYen } from "@/utils/process-price";
+import { formatJapaneseYen } from "@/lib/utils/process-price";
 import { toast } from "sonner";
 
 type CartItemRowProps = {

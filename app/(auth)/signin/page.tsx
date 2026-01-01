@@ -10,9 +10,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { SignInForm } from "@/app/(auth)/signin/sign-in-form";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
-import { sanitizePath } from "@/utils/sanitize-url";
+import { sanitizePath } from "@/lib/utils/sanitize-url";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -28,7 +28,7 @@ const SignInPage = async (props: {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (session) {
+  if (session && !session.user.isAnonymous) {
     redirect(sanitizePath(callback));
   }
   return (

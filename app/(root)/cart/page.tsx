@@ -4,7 +4,6 @@ import { TotalPriceCard } from "./total-price-card";
 
 const CartPage = async () => {
   const cart = await getCartItems();
-  console.log("called", cart);
   return (
     <div className="py-10">
       <h2 className="text-3xl py-4">Shopping Cart</h2>

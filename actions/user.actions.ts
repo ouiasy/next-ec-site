@@ -1,7 +1,7 @@
 "use server";
 
 import { signInFormSchema, signUpFormSchema } from "@/zod/user.zod";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { headers } from "next/headers";
 import { z } from "zod";
@@ -80,6 +80,7 @@ export const signUpUser = async (
         email: user.email,
         password: user.password,
       },
+      headers: await headers(),
     });
 
     return { success: true, message: "ユーザーの作成に成功しました" };

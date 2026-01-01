@@ -1,7 +1,7 @@
 "use server";
 
 import { addressTable } from "@/db/schema/address.schema";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 import { shippingAddressSchema } from "@/zod/shipping-address.zod";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
