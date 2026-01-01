@@ -10,7 +10,7 @@ export const sanitizePath = (path: string | undefined): string => {
   }
 
   // protocol-relative url
-  if (!path.startsWith("//")) {
+  if (path.startsWith("//")) {
     return defaultPath
   }
   return path

@@ -9,7 +9,7 @@ import { signInWithCredentials } from "@/actions/user.actions";
 import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
-import { sanitizePath } from "@/lib/utils/sanitize-url";
+import { sanitizePath } from "@/lib/utils";
 
 export const SignInForm = () => {
   const router = useRouter();
@@ -23,7 +23,7 @@ export const SignInForm = () => {
       if (data.success) {
         toast.success("ログインに成功しました");
         router.push(sanitizePath(callbackUrl));
-      } else if (!data.success && data.message) {
+      } else {
         toast.error(data.message);
       }
     }

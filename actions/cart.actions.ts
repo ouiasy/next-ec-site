@@ -264,6 +264,7 @@ export const removeItemFromCart = async (
 type GetCartItemsResult = {
   success: boolean;
   message?: string;
+  isAnonymous?: boolean;
   data: GetCartItemsData | null;
 };
 
