@@ -7,7 +7,11 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import {countItems} from "@/lib/utils";
 
-export const TotalPriceCard = ({ items }: CartProps) => {
+interface TotalPriceCardProps extends CartProps {
+  isAnonymous: boolean;
+}
+
+export const TotalPriceCard = ({ items, isAnonymous }: TotalPriceCardProps) => {
   return (
     <Card className="text-center w-full">
       <CardHeader>
@@ -20,8 +24,7 @@ export const TotalPriceCard = ({ items }: CartProps) => {
           <p>{formatJapaneseYen(calculateSubtotal(items))}</p>
         </div>
         <Button className="w-full cursor-pointer items-center" asChild>
-          {/*todo: if user not logged in, go to login page*/}
-          <Link href="/shipping">
+          <Link href={isAnonymous ? "/signin?callback=/cart" :"/shipping"}>
             <ArrowRight className="" />
             チェックアウト
           </Link>
