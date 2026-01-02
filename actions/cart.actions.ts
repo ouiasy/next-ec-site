@@ -318,6 +318,7 @@ export const getCartItems = async (): Promise<GetCartItemsResult> => {
 
     return {
       success: true,
+      isAnonymous: session.user.isAnonymous ?? true,
       data: res,
     };
   } catch (error) {

@@ -7,8 +7,8 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import {countItems} from "@/lib/utils";
 
-interface TotalPriceCardProps extends CartProps {
-  isAnonymous: boolean;
+type TotalPriceCardProps = CartProps & {
+  isAnonymous: boolean
 }
 
 export const TotalPriceCard = ({ items, isAnonymous }: TotalPriceCardProps) => {
@@ -24,7 +24,7 @@ export const TotalPriceCard = ({ items, isAnonymous }: TotalPriceCardProps) => {
           <p>{formatJapaneseYen(calculateSubtotal(items))}</p>
         </div>
         <Button className="w-full cursor-pointer items-center" asChild>
-          <Link href={isAnonymous ? "/signin?callback=/cart" :"/shipping"}>
+          <Link href={isAnonymous ? "/signin" : "/shipping"}>
             <ArrowRight className="" />
             チェックアウト
           </Link>

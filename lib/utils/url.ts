@@ -15,3 +15,14 @@ export const sanitizePath = (path: string | undefined): string => {
   }
   return path
 }
+
+
+export const isPublicRoute = (path: string, publicRoutes: string[]): boolean => {
+  return publicRoutes.some(route => {
+    if (route === path) return true
+
+    if (route === "/") return false
+
+    return path.startsWith(`${route}/`)
+  })
+}

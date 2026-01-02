@@ -14,7 +14,7 @@ const CartPage = async () => {
               <CartTable items={cart.data.cartItems} />
             </div>
             <div className="md:col-span-1">
-              <TotalPriceCard items={cart.data.cartItems} isAnonymous={cart.isAnonymous ?? true}/>
+              <TotalPriceCard items={cart.data.cartItems} isAnonymous={cart.isAnonymous ?? true} />
             </div>
           </>
         ) : (
