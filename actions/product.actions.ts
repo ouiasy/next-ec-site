@@ -2,27 +2,37 @@
 
 import { db } from "@/db";
 import { desc, eq } from "drizzle-orm";
-import { productTable } from "@/db/schema/product.schema";
-import { LATEST_PRODUCTS_LIMIT } from "@/lib/constants";
-import {SelectProductTable} from "@/types/dabatase/product.types";
+import { productImageTable, productTable } from "@/db/schema/product.schema";
+import { GetLatestProductResponse, SelectProductTable } from "@/types/dto/response/product.type.response";
 
-type GetLatestProductResult = SelectProductTable;
 
-export const getLatestProducts = async (): Promise<GetLatestProductResult[] | null> => {
+export const getLatestProducts = async (): Promise<GetLatestProductResponse[]> => {
   try {
-    const data: SelectProductTable[] = await db.query.productTable.findMany({
-      limit: LATEST_PRODUCTS_LIMIT,
-      orderBy: [desc(productTable.createdAt)],
-    });
-    return data;
+    return await db.select({
+      id: productTable.id,
+      name: productTable.name,
+      slug: productTable.slug,
+      categoryId: productTable.categoryId,
+      description: productTable.description,
+      priceInTax: productTable.priceInTax,
+      brand: productTable.brand,
+      rating: productTable.rating,
+      numReviews: productTable.numReviews,
+      stock: productTable.stock,
+      imageName: productImageTable.imageName,
+      imageUrl: productImageTable.url,
+      // todo: displayorderを本番用に入れる
+    }).from(productTable)
+      .leftJoin(productImageTable, eq(productTable.id, productImageTable.productId))
+      .groupBy(productTable.id)
+      .orderBy(desc(productTable.createdAt))
   } catch (e) {
     console.log("error fetching latest products: ", e)
-    return null
+    return []
   }
-
 };
 
-export const getProductBySlug = async (slug: string): Promise<SelectProductTable | null> => {
+export const getProductBySlug = async (slug: string) => {
   try {
     const data: SelectProductTable | undefined = await db.query.productTable.findFirst({
       where: eq(productTable.slug, slug),

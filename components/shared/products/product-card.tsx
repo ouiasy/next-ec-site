@@ -1,16 +1,16 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
-import { ProductType } from "@/types/product.type";
 import { formatJapaneseYen } from "@/lib/utils/process-price";
+import { GetLatestProductResponse } from "@/types/dto/response/product.type.response";
 
-export const ProductCard = ({ product }: { product: ProductType }) => {
+export const ProductCard = ({ product }: { product: GetLatestProductResponse }) => {
   return (
     <Card className="w-80 sm:w-60 xl:w-80 max-w-sm p-0 flex flex-col mx-auto">
       <CardHeader className="h-3/5 relative">
         <Link href={`/product/${product.slug}`} className="aspect-square ">
           <Image
-            src={product.images[0]}
+            src={product.imageUrl[0]}
             alt={product.name}
             priority={true}
             fill

@@ -1,11 +1,11 @@
 import {betterAuth} from "better-auth";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
 import {db} from "@/db";
-import {nanoid} from "nanoid";
 import {SERVER_URL} from "@/lib/constants";
 import {nextCookies} from "better-auth/next-js";
 import {admin, anonymous, jwt} from "better-auth/plugins"
 import { mergeAnonymousCart } from "@/lib/services/cart";
+import { ulid } from "ulid";
 
 export const auth = betterAuth({
   baseURL: SERVER_URL,
@@ -14,7 +14,7 @@ export const auth = betterAuth({
     requireEmailVerification: false,
   },
   database: drizzleAdapter(db, {
-    provider: "sqlite",
+    provider: "pg",
     usePlural: true,
   }),
   session: {
@@ -26,7 +26,7 @@ export const auth = betterAuth({
   },
   advanced: {
     database: {
-      generateId: () => nanoid(),
+      generateId: () => ulid(),
     },
   },
   plugins: [

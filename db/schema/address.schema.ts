@@ -1,27 +1,31 @@
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { users } from "./user.schema";
-import { relations } from "drizzle-orm";
-import { nanoid } from "nanoid";
+import { ulid } from "ulid";
 
-export const addressTable = sqliteTable("addresses", {
-  id: text()
-    .primaryKey()
-    .$defaultFn(() => nanoid()),
-  userId: text()
-    .notNull()
-    .unique()
-    .references(() => users.id, { onDelete: "cascade" }),
-  name: text().notNull(),
-  postalCode: text().notNull(),
-  prefecture: text().notNull(),
-  city: text().notNull(),
-  street: text().notNull(),
-  building: text(),
-});
+export const addressTable =
+  pgTable("addresses", {
+    id: text()
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    postalCode: text().notNull(),
+    prefecture: text().notNull(),
+    city: text().notNull(),
+    street: text().notNull(),
+    building: text(),
+    isDefault: boolean().notNull().default(false),
+    createdAt: timestamp({ withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp({ withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdateFn(() => new Date()),
+  }, (table) => [
+    index("address_user_id_idx").on(table.userId)
+  ]);
 
-export const addressTableRelation = relations(addressTable, ({ one }) => ({
-  user: one(users, {
-    fields: [addressTable.userId],
-    references: [users.id],
-  }),
-}));
+

@@ -37,7 +37,7 @@ export const ShippingAddrForm = ({
     defaultValues: {
       name: address?.name || "",
       postalCode: address?.postalCode || "",
-      prefecture: address?.prefecture || "",
+      prefecture: address?.prefecture,
       city: address?.city || "",
       street: address?.street || "",
       building: address?.building || "",
@@ -169,7 +169,7 @@ export const ShippingAddrForm = ({
           className="cursor-pointer"
           asChild
         >
-          <Link href="/payment">
+          <Link href="/payment-method">
             <MoveRight /> 支払い方法の選択
           </Link>
         </Button>
