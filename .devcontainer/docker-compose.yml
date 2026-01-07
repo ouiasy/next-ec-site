@@ -12,12 +12,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.db
-    env_file:
-      - ../.env
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: "appuser"
+      POSTGRES_PASSWORD: "my_password"
+      POSTGRES_DB: "ecsite"
     volumes:
       - postgres-for-ecsite:/var/lib/postgres/data
 
