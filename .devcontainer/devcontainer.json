@@ -11,7 +11,7 @@
   "forwardPorts": [
     3000
   ],
-  initializeCommand: "cp ${workspaceFolder}/.env.example ${workspaceFolder}/.env",
+  onCreateCommand: "cp .env.example .env",
   // Use 'postCreateCommand' to run commands after the container is created.
 //  "postCreateCommand": "pnpm install",
   // Configure tool-specific properties.
