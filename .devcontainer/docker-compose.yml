@@ -1,0 +1,25 @@
+services:
+  app:
+    image: my-next-node:v1
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    depends_on:
+      - db
+
+  db:
+    image: my-postgres:v1
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    env_file:
+      - ../.env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres-for-ecsite:/var/lib/postgres/data
+
+volumes:
+  postgres-for-ecsite:
