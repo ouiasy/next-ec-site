@@ -1,8 +1,9 @@
-import "dotenv/config";
+import { config } from '@dotenvx/dotenvx';
 import { reset, seed } from "drizzle-seed";
 import { productImageTable, productTable, categoryTable } from "@/db/schema/product.schema";
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/node-postgres";
 
+config({ override: true });
 
 const main = async () => {
   try {

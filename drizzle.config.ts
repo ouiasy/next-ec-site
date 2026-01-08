@@ -1,5 +1,7 @@
-import 'dotenv/config';
+import { config } from '@dotenvx/dotenvx';
 import {defineConfig} from 'drizzle-kit';
+
+config({ override: true });
 
 export default defineConfig({
   out: './db/migrations/',
