@@ -1,7 +1,6 @@
-import "dotenv/config";
 import { reset, seed } from "drizzle-seed";
 import { productImageTable, productTable, categoryTable } from "@/db/schema/product.schema";
-import { drizzle } from "drizzle-orm/libsql";
+import {drizzle} from "drizzle-orm/node-postgres"
 
 
 const main = async () => {

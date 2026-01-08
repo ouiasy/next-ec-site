@@ -1,5 +1,5 @@
 
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/node-postgres";
 import * as productSchema from "./schema/product.schema";
 import * as userSchema from "./schema/user.schema";
 import * as cartSchema from "./schema/cart.schema";
