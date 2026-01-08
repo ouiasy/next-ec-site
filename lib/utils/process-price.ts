@@ -1,4 +1,4 @@
-import {SelectProductTable} from "@/types/dto/response/product.type.response";
+import {SelectProductTable} from "@/types/dto/response/product.actions.response";
 
 
 export const formatJapaneseYen = (price: number | null) => {

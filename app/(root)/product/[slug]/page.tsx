@@ -1,4 +1,4 @@
-import { getProductBySlug } from "@/actions/product.actions";
+import { getProductBySlug } from "@/api/actions/product.actions";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,13 +13,13 @@ async function ProductDetail({
 }) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
-  if (product === null) notFound();
+  if (product === null || product.imageUrls?.length === 0) notFound();
 
   return (
     <section className="mt-10">
       <div className="grid grid-cols-1 md:grid-cols-5">
         <div className="col-span-2">
-          <ProductImages images={product.images} />
+          <ProductImages imageUrls={product.imageUrls ?? []} imageNames={product.imageNames ?? []}/>
         </div>
         <div className="col-span-2 p-5 items-center">
           <div className="flex flex-col gap-6">
@@ -32,7 +32,7 @@ async function ProductDetail({
             </p>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <Badge className="w-24 rounded-full bg-green-100 text-green-700 py-2 px-5 text-xl">
-                {formatJapaneseYen(product.price)}
+                {formatJapaneseYen(product.priceInTax)}
               </Badge>
             </div>
           </div>
@@ -50,7 +50,7 @@ async function ProductDetail({
                 <div className="flex-1">Price</div>
                 <div className="flex-1 pr-3 text-right">
                   <div className="py-2 text-xl  px-2">
-                    {formatJapaneseYen(product.price)}
+                    {formatJapaneseYen(product.priceInTax)}
                   </div>
                 </div>
               </div>
@@ -71,13 +71,7 @@ async function ProductDetail({
               <div>
                 {product.stock! > 0 && (
                   <AddToCartCard
-                    item={{
-                      productId: product.id,
-                      name: product.name,
-                      slug: product.slug,
-                      image: product.images![0],
-                      price: product.price,
-                    }}
+                      productId={product.id} stock={product.stock} productName={product.name}
                   />
                 )}
               </div>

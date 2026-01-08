@@ -12,10 +12,6 @@ export const cartTable = pgTable("carts", {
   createdAt: timestamp({ withTimezone: true })
     .notNull()
     .defaultNow(),
-  updatedAt: timestamp({ withTimezone: true })
-    .notNull()
-    .defaultNow()
-    .$onUpdateFn(() => new Date()),
 }, (table) => [
   index("cart_user_id_idx").on(table.userId)
 ]);
@@ -41,6 +37,9 @@ export const cartItemTable = pgTable(
       .defaultNow()
       .$onUpdateFn(() => new Date()),
   },
-  (table) => [unique().on(table.cartId, table.productId)],
+  (table) => [
+      unique().on(table.cartId, table.productId),
+      index("cart_items_product_id_index").on(table.productId)
+  ],
 );
 

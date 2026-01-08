@@ -2,9 +2,9 @@ import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
 import {formatJapaneseYen} from "@/lib/utils/process-price";
-import {GetLatestProductResponse} from "@/types/dto/response/product.type.response";
+import {GetLatestProductsResponse} from "@/types/dto/response/product.actions.response";
 
-export const ProductCard = ({product}: { product: GetLatestProductResponse }) => {
+export const ProductCard = ({product}: { product: GetLatestProductsResponse }) => {
     return (
         <Card className="w-80 sm:w-60 xl:w-70 max-w-sm p-0 flex flex-col mx-auto rounded-none">
             <CardHeader className="relative bg-primary">

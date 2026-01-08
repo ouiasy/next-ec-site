@@ -1,5 +1,5 @@
 import ProductsList from "@/components/shared/products/products-list";
-import {getLatestProducts} from "@/actions/product.actions";
+import {getLatestProducts} from "@/api/actions/product.actions";
 
 export const metadata = {
     title: "Home",

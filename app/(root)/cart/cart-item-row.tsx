@@ -1,5 +1,4 @@
 import { TableCell, TableRow } from "@/components/ui/table";
-import { SelectProductTable } from "@/types/dabatase/product.types";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Plus, Minus } from "lucide-react";
@@ -9,20 +8,13 @@ import { useTransition } from "react";
 import {
   removeOneItemFromCart,
   addOneItemToCart,
-} from "@/actions/cart.actions";
+} from "@/api/actions/cart.actions";
 import { formatJapaneseYen } from "@/lib/utils/process-price";
 import { toast } from "sonner";
+import {GetCartItemsData} from "@/types/dto/response/cart.actions.response";
 
-type CartItemRowProps = {
-  id: string;
-  cartId: string;
-  productId: string;
-  quantity: number;
-  addedAt: number;
-  product: SelectProductTable;
-};
 
-export const CartItemRow = ({ item }: { item: CartItemRowProps }) => {
+export const CartItemRow = ({ item }: { item: GetCartItemsData }) => {
   const [isPending, startTransition] = useTransition();
   const handleDecreaseButton = (productId: string) =>
     startTransition(async () => {
@@ -43,27 +35,27 @@ export const CartItemRow = ({ item }: { item: CartItemRowProps }) => {
       }
     });
   return (
-    <TableRow key={item.id}>
+    <TableRow key={item.slug}>
       <TableCell>
         <Link
-          href={`/product/${item.product.slug}`}
+          href={`/product/${item.slug}`}
           className="flex gap-7 items-center"
         >
           <Image
             className="rounded-xs"
-            src={item.product.images[0]}
+            src={item.imageUrl ?? "/images/not-found.png"}
             height={50}
             width={50}
-            alt={item.product.name}
+            alt={item.name ?? "item image"}
           />
-          <span className="text-xl">{item.product.name}</span>
+          <span className="text-xl">{item.name}</span>
         </Link>
       </TableCell>
       <TableCell className="flex items-center">
         <Button
           className="cursor-pointer"
           disabled={isPending}
-          onClick={() => handleDecreaseButton(item.productId)}
+          onClick={() => handleDecreaseButton(item.slug)} // todo: change to productid
           variant="outline"
         >
           <Minus className="" />
@@ -82,7 +74,7 @@ export const CartItemRow = ({ item }: { item: CartItemRowProps }) => {
           className="cursor-pointer"
           disabled={isPending}
           variant="outline"
-          onClick={() => handleAddButton(item.productId)}
+          onClick={() => handleAddButton(item.slug)} // todo: change to productid
         >
           <Plus />
         </Button>

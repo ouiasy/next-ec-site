@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { CartItemPayload } from "@/types/schema/cart.type";
-import { AddItemToCart } from "@/actions/cart.actions";
+import { addItemToCart } from "@/api/actions/cart.actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -15,8 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export const AddToCartCard = ({ item }: { item: CartItemPayload }) => {
-  const [quantity, setQuantity] = useState<number | undefined>(undefined);
+export const AddToCartCard = ({ productId, stock, productName }: { productId: string, stock: number, productName: string }) => {
+  const [quantity, setQuantity] = useState<number>(1);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const handleAddToCart = async () => {
@@ -25,15 +25,14 @@ export const AddToCartCard = ({ item }: { item: CartItemPayload }) => {
         toast.error("数量を選択してください");
         return;
       }
-      console.log(item.productId);
-      const res = await AddItemToCart(item.productId, quantity);
+      const res = await addItemToCart(productId, quantity);
       if (!res.success) {
         toast.error(res.message);
         return;
       }
-      toast.success(`${item.name} がカートに入りました `, {
+      toast.success(`${productName} がカートに入りました `, {
         action: {
-          label: "Go To Cart",
+          label: "カートをみる",
           onClick: () => router.push("/cart"),
         },
         classNames: {
@@ -53,12 +52,14 @@ export const AddToCartCard = ({ item }: { item: CartItemPayload }) => {
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {/*TODO : fix here*/}
-            <SelectItem value="1">1</SelectItem>
-            <SelectItem value="2">2</SelectItem>
-            <SelectItem value="3">3</SelectItem>
-            <SelectItem value="4">4</SelectItem>
-            <SelectItem value="5">5</SelectItem>
+            {
+              Array.from({length: stock > 10 ? 10 : stock}).map((_, idx) => {
+                const num = idx + 1;
+                return (
+                    <SelectItem value={num.toString()} key={num}>{num}</SelectItem>
+                )
+              })
+            }
           </SelectGroup>
         </SelectContent>
       </Select>

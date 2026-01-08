@@ -59,7 +59,7 @@ export const categoryTable =
   pgTable("categories", {
     id: text().primaryKey()
       .$defaultFn(() => ulid()),
-    name: text().notNull(),
+    name: text().notNull().unique(),
     slug: text().notNull().unique(),
     parentId: text() // rootはnull
       .references((): AnyPgColumn => categoryTable.id, { onDelete: "cascade" }),

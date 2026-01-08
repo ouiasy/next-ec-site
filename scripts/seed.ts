@@ -3,7 +3,7 @@ import { config } from '@dotenvx/dotenvx';
 import { productImageTable, productTable, categoryTable } from "@/db/schema/product.schema";
 import {drizzle} from "drizzle-orm/node-postgres"
 
-config({ override: true });
+config();
 
 const main = async () => {
   try {
@@ -18,7 +18,7 @@ const main = async () => {
         count: 10,
         columns: {
           name: f.string(),
-          slug: f.string(),
+          slug: f.string({isUnique: true}),
           description: f.string(),
           priceBeforeTax: f.int({
             minValue: 1000,

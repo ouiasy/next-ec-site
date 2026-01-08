@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { shippingAddressSchema } from "@/zod/shipping-address.zod";
-import { handleShippingAddr } from "@/actions/shipping.actions";
+import { handleShippingAddr } from "@/api/actions/shipping.actions";
 import { prefectures } from "@/zod/dataset/prefecture";
 import { addressTable } from "@/db/schema/address.schema";
 
