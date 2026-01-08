@@ -1,13 +1,13 @@
-import { productImageTable, productTable } from "@/db/schema/product.schema";
+import {productImageTable, productTable} from "@/db/schema/product.schema";
 
 
 export type SelectProductTable = typeof productTable.$inferSelect;
 export type SelectProductImageTable = typeof productImageTable.$inferSelect;
 
 export type GetLatestProductResponse = Pick<SelectProductTable,
-  "name" | "slug"  | "description" | "priceInTax"
-  | "brand" | "rating" | "numReviews" | "stock" | "categoryId"
+    "name" | "slug" | "description" | "priceInTax"
+    | "brand" | "rating" | "numReviews" | "stock" | "categoryId"
 > & {
-  imageUrl: string | null,
-  imageName: string | null
+    imageUrls: string[] | null,
+    imageNames: string[] | null,
 }

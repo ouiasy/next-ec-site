@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { desc, eq } from "drizzle-orm";
+import {desc, eq, sql} from "drizzle-orm";
 import { productImageTable, productTable } from "@/db/schema/product.schema";
 import { GetLatestProductResponse, SelectProductTable } from "@/types/dto/response/product.type.response";
 
@@ -19,13 +19,13 @@ export const getLatestProducts = async (): Promise<GetLatestProductResponse[]> =
       rating: productTable.rating,
       numReviews: productTable.numReviews,
       stock: productTable.stock,
-      imageName: productImageTable.imageName,
-      imageUrl: productImageTable.url,
-      // todo: displayorderを本番用に入れる
+      imageNames: sql<string[] | null>`array_agg(${productImageTable.imageName})`,
+      imageUrls: sql<string[] | null>`array_agg(${productImageTable.url})`,
     }).from(productTable)
       .leftJoin(productImageTable, eq(productTable.id, productImageTable.productId))
       .groupBy(productTable.id)
       .orderBy(desc(productTable.createdAt))
+        .limit(4)
   } catch (e) {
     console.log("error fetching latest products: ", e)
     return []

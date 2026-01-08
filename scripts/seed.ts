@@ -1,20 +1,24 @@
 import { reset, seed } from "drizzle-seed";
+import { config } from '@dotenvx/dotenvx';
 import { productImageTable, productTable, categoryTable } from "@/db/schema/product.schema";
 import {drizzle} from "drizzle-orm/node-postgres"
 
+config({ override: true });
 
 const main = async () => {
   try {
+
     const db = drizzle(process.env.DB_URL!, {
       casing: "snake_case",
     })
+    console.log("connecting to...: ", process.env.DB_URL)
     await reset(db, { productTable, productImageTable, categoryTable })
     await seed(db, { productTable, productImageTable, categoryTable }).refine((f) => ({
       productTable: {
         count: 10,
         columns: {
           name: f.string(),
-          slug: f.string({ isUnique: true }),
+          slug: f.string(),
           description: f.string(),
           priceBeforeTax: f.int({
             minValue: 1000,
@@ -36,6 +40,9 @@ const main = async () => {
             maxValue: 10,
           }),
         },
+        with: {
+
+        }
       },
       productImageTable: {
         count: 10,
