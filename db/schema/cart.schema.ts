@@ -1,58 +1,46 @@
-import { integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
-import { nanoid } from "nanoid";
-import { relations, sql } from "drizzle-orm";
-import { users } from "@/db/schema/user.schema";
-import { productTable } from "@/db/schema/product.schema";
+import {users} from "@/db/schema/user.schema";
+import {productTable} from "@/db/schema/product.schema";
+import {ulid} from "ulid";
+import {index, integer, pgTable, text, timestamp, unique} from "drizzle-orm/pg-core";
 
 
-export const cartTable = sqliteTable("carts", {
+export const cartTable = pgTable("carts", {
   id: text()
     .primaryKey()
-    .$defaultFn(() => nanoid()),
-  userId: text().references(() => users.id, { onDelete: "cascade" }),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .$defaultFn(() => ulid()),
+  userId: text().references(() => users.id, {onDelete: "cascade"}),
+  createdAt: timestamp({withTimezone: true})
     .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-});
+    .defaultNow(),
+}, (table) => [
+  index("cart_user_id_idx").on(table.userId)
+]);
 
-export const cartItemTable = sqliteTable(
+export const cartItemTable = pgTable(
   "cart_items",
   {
     id: text()
       .primaryKey()
-      .$defaultFn(() => nanoid()),
+      .$defaultFn(() => ulid()),
     cartId: text()
       .notNull()
-      .references(() => cartTable.id, { onDelete: "cascade" }),
+      .references(() => cartTable.id, {onDelete: "cascade"}),
     productId: text()
       .notNull()
-      .references(() => productTable.id, { onDelete: "cascade" }),
+      .references(() => productTable.id, {onDelete: "cascade"}),
     quantity: integer().notNull(),
-    addedAt: integer()
+    createdAt: timestamp({withTimezone: true})
       .notNull()
-      .default(sql`(unixepoch())`),
+      .defaultNow(),
+    updatedAt: timestamp({withTimezone: true})
+      .notNull()
+      .defaultNow()
+      .$onUpdateFn(() => new Date()),
   },
-  (table) => [unique().on(table.cartId, table.productId)],
+  (table) => [
+    unique().on(table.cartId, table.productId),
+    index("cart_items_product_id_index").on(table.productId),
+    index("cart_items_cart_id_index").on(table.cartId),
+  ],
 );
 
-export const cartsRelations = relations(cartTable, ({ one, many }) => ({
-  user: one(users, {
-    fields: [cartTable.userId],
-    references: [users.id],
-  }),
-  cartItems: many(cartItemTable),
-}));
-
-export const cartItemsRelations = relations(cartItemTable, ({ one }) => ({
-  cart: one(cartTable, {
-    fields: [cartItemTable.cartId],
-    references: [cartTable.id],
-  }),
-  product: one(productTable, {
-    fields: [cartItemTable.productId],
-    references: [productTable.id],
-  }),
-}));

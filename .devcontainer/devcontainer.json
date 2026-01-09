@@ -1,0 +1,25 @@
+{
+  // change name on GitHub
+  name: "ec-site",
+  remoteUser: "node",
+  workspaceFolder: "/home/node/${localWorkspaceFolderBasename}",
+  dockerComposeFile: "docker-compose.yml",
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  // "features": {},
+  service: "app",
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [
+    3000
+  ],
+  onCreateCommand: "cp .env.example .env",
+  // Use 'postCreateCommand' to run commands after the container is created.
+//  "postCreateCommand": "pnpm install",
+  // Configure tool-specific properties.
+  "customizations": {
+    "jetbrains": {
+      "settings": {
+        "org.jetbrains.plugins.terminal:app:TerminalOptionsProvider.myShellPath": "/usr/bin/zsh"
+      }
+    }
+  }
+}

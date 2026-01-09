@@ -1,6 +1,6 @@
 import { ShippingAddrForm } from "./shipping-addr-form";
-import { findShippingAddr } from "@/actions/shipping.actions";
-import { CheckoutProgressBar } from "@/components/shared/checkout-progress-bar";
+import { findShippingAddr } from "@/api/actions/shipping.actions";
+import { CheckoutProgressBar } from "@/app/(root)/(checkout)/checkout-progress-bar";
 
 const ShippingPage = async () => {
   const { data } = await findShippingAddr();

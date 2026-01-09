@@ -1,5 +1,5 @@
 import ProductsList from "@/components/shared/products/products-list";
-import {getLatestProducts} from "@/actions/product.actions";
+import {getLatestProducts} from "@/api/actions/product.actions";
 
 export const metadata = {
     title: "Home",
@@ -11,7 +11,7 @@ const Home =  async () => {
         <>
           {
             products ?
-                <ProductsList data={products} title={"test"} limit={4}/> : (
+                <ProductsList products={products} title={"test"}/> : (
                 <div className="flex flex-col justify-center h-full text-center">
                   <p className="text-4xl">Products Not Found</p>
                 </div>

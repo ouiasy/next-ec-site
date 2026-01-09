@@ -1,8 +1,8 @@
 import { createInsertSchema } from "drizzle-zod";
-import { products } from "@/db/schema/product.schema";
+import { productTable } from "@/db/schema/product.schema";
 import { z } from "zod";
 
-export const insertProductSchema = createInsertSchema(products, {
+export const insertProductSchema = createInsertSchema(productTable, {
   name: z.string().min(3, "name must be at least 3 chars"),
   slug: z.string().min(3, "slug must be at least 3 chars"),
   category: z.string().min(3, "category must be at least 3 chars"),

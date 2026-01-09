@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { signInDefaultValue } from "@/lib/constants";
 import Link from "next/link";
 import { useActionState, useEffect } from "react";
-import { signUpUser } from "@/actions/user.actions";
+import { signUpUser } from "@/api/actions/user.actions";
 import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
@@ -18,7 +18,8 @@ export const SignUpForm = () => {
 
   // TODO: need security fix...
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const callbackUrl = searchParams.get("callback") || "/";
+  console.log("callback is ", callbackUrl)
 
   useEffect(() => {
     if (data && !data.success && data.message) {

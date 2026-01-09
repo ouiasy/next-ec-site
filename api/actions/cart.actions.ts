@@ -1,28 +1,20 @@
 "use server";
 
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth/auth";
-import { db } from "@/db";
-import { eq, and } from "drizzle-orm";
-import { z } from "zod";
-import { cartItemTable, cartTable } from "@/db/schema/cart.schema";
-import { productTable } from "@/db/schema/product.schema";
-import { SelectProductTable } from "@/types/dabatase/product.types";
-import { sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import {headers} from "next/headers";
+import {auth} from "@/lib/auth/auth";
+import {db} from "@/db";
+import {and, eq, sql} from "drizzle-orm";
+import {z} from "zod";
+import {cartItemTable, cartTable} from "@/db/schema/cart.schema";
+import {productImageTable, productTable} from "@/db/schema/product.schema";
+import {revalidatePath} from "next/cache";
+import {redirect} from "next/navigation";
+import {GetCartItemsResponse} from "@/types/dto/response/cart.actions.response";
+import {getOrCreateCartId} from "@/api/utils/cart.infra";
+import {isRedirectError} from "next/dist/client/components/redirect-error";
 
 export const addOneItemToCart = async (productId: string) => {
   try {
-    const productInfo = await db.query.productTable.findFirst({
-      where: eq(productTable.id, productId),
-    });
-    if (productInfo === undefined) {
-      return {
-        success: false,
-        messsage: "商品が見つかりませんでした",
-      };
-    }
-
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -33,30 +25,37 @@ export const addOneItemToCart = async (productId: string) => {
       };
     }
 
-    const cart = await db.query.cartTable.findFirst({
-      where: eq(cartTable.userId, session.user.id),
-    });
-    if (cart === undefined) {
+    const carts = await db.select({
+      cartId: cartTable.id,
+    }).from(cartTable).where(eq(cartTable.userId, session.user.id)).limit(1)
+    if (carts.length === 0) {
       return {
         success: false,
         message: "カートが見つかりませんでした",
       };
     }
 
-    const cartItem = await db.query.cartItemTable.findFirst({
-      where: and(
-        eq(cartItemTable.cartId, cart.id),
-        eq(cartItemTable.productId, productInfo.id),
-      ),
-    });
-    if (cartItem === undefined) {
+    const cartItemAndProductInfo = await db.select({
+      quantity: cartItemTable.quantity,
+      stock: productTable.stock,
+    }).from(cartItemTable)
+      .where(
+        and(
+          eq(cartItemTable.cartId, carts[0].cartId),
+          eq(cartItemTable.productId, productId),
+        )
+      )
+      .innerJoin(productTable, eq(cartItemTable.productId, productTable.id))
+      .limit(1)
+    console.log(cartItemAndProductInfo)
+    if (cartItemAndProductInfo.length === 0) {
       return {
         success: false,
         message: "カートに該当の商品がありません",
       };
     }
 
-    if (cartItem.quantity + 1 > productInfo.stock) {
+    if (cartItemAndProductInfo[0].quantity + 1 > cartItemAndProductInfo[0].stock) {
       return {
         success: false,
         message: "商品の数が在庫数を超えてしまいます",
@@ -66,9 +65,12 @@ export const addOneItemToCart = async (productId: string) => {
     await db
       .update(cartItemTable)
       .set({
-        quantity: sql`${cartItemTable.quantity} + 1`,
+        quantity: sql`${cartItemTable.quantity}+ 1`,
       })
-      .where(eq(cartItemTable.id, cartItem.id));
+      .where(and(
+        eq(cartItemTable.cartId, carts[0].cartId),
+        eq(cartItemTable.productId, productId),
+      ));
 
     revalidatePath("/cart");
 
@@ -84,30 +86,11 @@ export const addOneItemToCart = async (productId: string) => {
   }
 };
 
-export const AddItemToCart = async (
+export const addItemToCart = async (
   productId: string,
   quantity: number,
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    // stock check
-    const productInfo: SelectProductTable | undefined =
-      await db.query.productTable.findFirst({
-        where: eq(productTable.id, productId),
-      });
-    if (productInfo === undefined) {
-      return {
-        success: false,
-        message: "該当の商品が見つかりません。",
-      };
-    }
-    if (productInfo.stock < quantity) {
-      return {
-        success: false,
-        message: "数量が在庫数を超えています。",
-      };
-    }
-
-    // session check
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -125,31 +108,19 @@ export const AddItemToCart = async (
       userId = session.user.id;
     }
 
-    let cart = await db.query.cartTable.findFirst({
-      where: eq(cartTable.userId, userId),
-    });
-    if (cart == undefined) {
-      cart = (
-        await db
-          .insert(cartTable)
-          .values({
-            userId: userId,
-          })
-          .returning()
-      )[0];
-    }
+    const cartId = await getOrCreateCartId(userId)
 
     // update cart
     await db
       .insert(cartItemTable)
       .values({
-        cartId: cart.id,
-        productId: productInfo.id,
+        cartId: cartId,
+        productId: productId,
         quantity: quantity,
       })
       .onConflictDoUpdate({
         target: [cartItemTable.cartId, cartItemTable.productId],
-        set: { quantity: quantity },
+        set: {quantity: quantity},
       });
 
     return {
@@ -157,6 +128,7 @@ export const AddItemToCart = async (
       message: "カートにアイテムを追加しました。",
     };
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -201,9 +173,13 @@ export const removeOneItemFromCart = async (productId: string) => {
     await db
       .update(cartItemTable)
       .set({
-        quantity: sql`${cartItemTable.quantity} -1`,
+        quantity: sql`${cartItemTable.quantity}
+        -1`,
       })
-      .where(eq(cartItemTable.productId, productId));
+      .where(and(
+        eq(cartItemTable.productId, productId),
+        eq(cartItemTable.cartId, cart.id)
+      ));
 
     revalidatePath("/cart");
 
@@ -261,73 +237,53 @@ export const removeItemFromCart = async (
   }
 };
 
-type GetCartItemsResult = {
-  success: boolean;
-  message?: string;
-  isAnonymous?: boolean;
-  data: GetCartItemsData | null;
-};
 
-export type GetCartItemsData = {
-  id: string;
-  userId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  cartItems: {
-    id: string;
-    cartId: string;
-    productId: string;
-    quantity: number;
-    addedAt: number;
-    product: SelectProductTable;
-  }[];
-};
-
-export const getCartItems = async (): Promise<GetCartItemsResult> => {
+export const getCartItems = async (): Promise<GetCartItemsResponse> => {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    if (session === null) {
-      return {
-        success: false,
-        message: "ログインしてください",
-        data: null,
-      };
+    if (session === null || session.user.isAnonymous) {
+      redirect("/signin")
     }
     const userId = session.user.id;
 
-    const res = await db.query.cartTable.findFirst({
-      where: eq(cartTable.userId, userId),
-      with: {
-        cartItems: {
-          with: {
-            product: true,
-          },
-        },
-      },
-    });
+    const res = await db.select({
+      productId: productTable.id,
+      slug: productTable.slug,
+      name: productTable.name,
+      imageUrl: productImageTable.url,
+      quantity: cartItemTable.quantity,
+      priceInTax: productTable.priceInTax,
+    })
+      .from(cartTable)
+      .where(and(
+        eq(cartTable.userId, userId),
+        eq(productImageTable.displayOrder, 0)
+      ))
+      .innerJoin(cartItemTable, eq(cartTable.id, cartItemTable.cartId))
+      .innerJoin(productTable, eq(cartItemTable.productId, productTable.id))
+      .innerJoin(productImageTable, eq(productImageTable.productId, productTable.id))
 
     if (res === undefined) {
       return {
-        success: true,
-        message: "カートが見つかりませんでした",
-        data: null,
-      };
+        success: false,
+        message: "data not found",
+        data: []
+      }
     }
 
     return {
       success: true,
-      isAnonymous: session.user.isAnonymous ?? true,
-      data: res,
-    };
+      data: res
+    }
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     console.error("Failed to fetch cart items:", error);
     return {
       success: false,
-      message:
-        "データの取得中にエラーが発生しました。しばらく経ってから再試行してください。",
-      data: null,
-    };
+      message: "internal error",
+      data: []
+    }
   }
 };

@@ -1,5 +1,4 @@
 "use client";
-import { GetCartItemsData } from "@/actions/cart.actions";
 import {
   Table,
   TableBody,
@@ -7,13 +6,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CartItemRow } from "./cart-item-row";
+import {CartItemRow} from "./cart-item-row";
+import {GetCartItemsData} from "@/types/dto/response/cart.actions.response";
 
-export type CartProps = {
-  items: GetCartItemsData["cartItems"];
-};
 
-export const CartTable = ({ items }: CartProps) => {
+type CartTableProps = {
+  items: GetCartItemsData[]
+}
+
+export const CartTable = ({items}: CartTableProps) => {
   return (
     <Table className="overflow-x-scroll">
       <TableHeader>
@@ -25,7 +26,9 @@ export const CartTable = ({ items }: CartProps) => {
       </TableHeader>
       <TableBody>
         {items.map((item) => {
-          return <CartItemRow item={item} key={item.id} />;
+          if (item.quantity > 0) {
+            return <CartItemRow item={item} key={item.slug}/>;
+          }
         })}
       </TableBody>
     </Table>

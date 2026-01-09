@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { signInDefaultValue } from "@/lib/constants";
 import Link from "next/link";
 import { useActionState, useEffect } from "react";
-import { signInWithCredentials } from "@/actions/user.actions";
+import { signInWithCredentials } from "@/api/actions/user.actions";
 import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";

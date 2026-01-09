@@ -46,4 +46,4 @@ export const prefectures = [
   "宮崎県",
   "鹿児島県",
   "沖縄県",
-];
+] as const;

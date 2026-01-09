@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { shippingAddressSchema } from "@/zod/shipping-address.zod";
-import { handleShippingAddr } from "@/actions/shipping.actions";
+import { handleShippingAddr } from "@/api/actions/shipping.actions";
 import { prefectures } from "@/zod/dataset/prefecture";
 import { addressTable } from "@/db/schema/address.schema";
 
@@ -37,7 +37,7 @@ export const ShippingAddrForm = ({
     defaultValues: {
       name: address?.name || "",
       postalCode: address?.postalCode || "",
-      prefecture: address?.prefecture || "",
+      prefecture: address?.prefecture,
       city: address?.city || "",
       street: address?.street || "",
       building: address?.building || "",
@@ -169,7 +169,7 @@ export const ShippingAddrForm = ({
           className="cursor-pointer"
           asChild
         >
-          <Link href="/payment">
+          <Link href="/payment-method">
             <MoveRight /> 支払い方法の選択
           </Link>
         </Button>
