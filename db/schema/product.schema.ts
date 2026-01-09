@@ -17,7 +17,7 @@ export const productTable = pgTable("products", {
     (): SQL =>
       sql`CAST
           (${productTable.priceBeforeTax} * (${productTable.taxRatePercentage} + 100) / 100 + 0.5 AS INTEGER)`,
-  ),
+  ).notNull(),
   brand: text(),
   rating: real(),
   numReviews: integer(),

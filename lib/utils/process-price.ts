@@ -1,4 +1,4 @@
-import {SelectProductTable} from "@/types/dto/response/product.actions.response";
+import {GetCartItemsData} from "@/types/dto/response/cart.actions.response";
 
 
 export const formatJapaneseYen = (price: number | null) => {
@@ -15,17 +15,10 @@ export const formatJapaneseYen = (price: number | null) => {
 };
 
 export const calculateSubtotal = (
-    items: {
-        id: string;
-        cartId: string;
-        productId: string;
-        quantity: number;
-        addedAt: number;
-        product: SelectProductTable;
-    }[],
+    items: GetCartItemsData[],
 ): number => {
     return items.reduce(
-        (sum, item) => sum + item.quantity * item.product.price,
+        (sum, item) => sum + item.quantity * item.priceInTax,
         0,
     );
 };

@@ -1,17 +1,17 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { CartProps } from "./cart-table";
 import { Button } from "@/components/ui/button";
 import { calculateSubtotal } from "@/lib/utils/process-price";
 import { formatJapaneseYen } from "@/lib/utils/process-price";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import {countItems} from "@/lib/utils";
+import {GetCartItemsData} from "@/types/dto/response/cart.actions.response";
 
-type TotalPriceCardProps = CartProps & {
-  isAnonymous: boolean
+type TotalPriceCardProps = {
+  items: GetCartItemsData[];
 }
 
-export const TotalPriceCard = ({ items, isAnonymous }: TotalPriceCardProps) => {
+export const TotalPriceCard = ({ items }: TotalPriceCardProps) => {
   return (
     <Card className="text-center w-full">
       <CardHeader>
@@ -24,7 +24,7 @@ export const TotalPriceCard = ({ items, isAnonymous }: TotalPriceCardProps) => {
           <p>{formatJapaneseYen(calculateSubtotal(items))}</p>
         </div>
         <Button className="w-full cursor-pointer items-center" asChild>
-          <Link href={isAnonymous ? "/signin" : "/shipping"}>
+          <Link href={"/shipping"}>
             <ArrowRight className="" />
             チェックアウト
           </Link>

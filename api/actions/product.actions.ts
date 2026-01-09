@@ -1,13 +1,9 @@
 "use server";
 
-import { db } from "@/db";
+import {db} from "@/db";
 import {desc, eq, sql} from "drizzle-orm";
 import {categoryTable, productImageTable, productTable} from "@/db/schema/product.schema";
-import {
-  GetLatestProductsResponse,
-  GetProductBySlugResponse,
-  SelectProductTable
-} from "@/types/dto/response/product.actions.response";
+import {GetLatestProductsResponse, GetProductBySlugResponse} from "@/types/dto/response/product.actions.response";
 
 
 export const getLatestProducts = async (): Promise<GetLatestProductsResponse[]> => {
@@ -22,13 +18,19 @@ export const getLatestProducts = async (): Promise<GetLatestProductsResponse[]> 
       rating: productTable.rating,
       numReviews: productTable.numReviews,
       stock: productTable.stock,
-      imageNames: sql<string[] | null>`array_agg(${productImageTable.imageName})`,
-      imageUrls: sql<string[] | null>`array_agg(${productImageTable.url})`,
+      imageNames: sql<string[] | null>`array_agg
+      (
+      ${productImageTable.imageName}
+      )`,
+      imageUrls: sql<string[] | null>`array_agg
+      (
+      ${productImageTable.url}
+      )`,
     }).from(productTable)
       .leftJoin(productImageTable, eq(productTable.id, productImageTable.productId))
       .groupBy(productTable.id)
       .orderBy(desc(productTable.createdAt))
-        .limit(4)
+      .limit(4)
   } catch (e) {
     console.log("error fetching latest products: ", e)
     return []
@@ -48,15 +50,21 @@ export const getProductBySlug = async (slug: string): Promise<GetProductBySlugRe
       rating: productTable.rating,
       numReviews: productTable.numReviews,
       stock: productTable.stock,
-      imageNames: sql<string[] | null>`array_agg(${productImageTable.imageName})`,
-      imageUrls: sql<string[] | null>`array_agg(${productImageTable.url})`,
+      imageNames: sql<string[] | null>`array_agg
+      (
+      ${productImageTable.imageName}
+      )`,
+      imageUrls: sql<string[] | null>`array_agg
+      (
+      ${productImageTable.url}
+      )`,
       category: categoryTable.name,
     }).from(productTable)
-        .leftJoin(productImageTable, eq(productTable.id, productImageTable.productId))
-        .where(eq(productTable.slug, slug))
-        .limit(1)
-        .leftJoin(categoryTable, eq(productTable.categoryId, categoryTable.id) )
-        .groupBy(productTable.id, categoryTable.name)
+      .leftJoin(productImageTable, eq(productTable.id, productImageTable.productId))
+      .where(eq(productTable.slug, slug))
+      .limit(1)
+      .leftJoin(categoryTable, eq(productTable.categoryId, categoryTable.id))
+      .groupBy(productTable.id, categoryTable.name)
 
     if (data === undefined) return null;
 

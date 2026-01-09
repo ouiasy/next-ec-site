@@ -10,20 +10,11 @@ import {productImageTable, productTable} from "@/db/schema/product.schema";
 import {revalidatePath} from "next/cache";
 import {redirect} from "next/navigation";
 import {GetCartItemsResponse} from "@/types/dto/response/cart.actions.response";
-import {getOrCreateCartId} from "@/api/services/cart.service";
+import {getOrCreateCartId} from "@/api/utils/cart.infra";
+import {isRedirectError} from "next/dist/client/components/redirect-error";
 
 export const addOneItemToCart = async (productId: string) => {
   try {
-    const productInfo = await db.query.productTable.findFirst({
-      where: eq(productTable.id, productId),
-    });
-    if (productInfo === undefined) {
-      return {
-        success: false,
-        messsage: "商品が見つかりませんでした",
-      };
-    }
-
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -34,30 +25,37 @@ export const addOneItemToCart = async (productId: string) => {
       };
     }
 
-    const cart = await db.query.cartTable.findFirst({
-      where: eq(cartTable.userId, session.user.id),
-    });
-    if (cart === undefined) {
+    const carts = await db.select({
+      cartId: cartTable.id,
+    }).from(cartTable).where(eq(cartTable.userId, session.user.id)).limit(1)
+    if (carts.length === 0) {
       return {
         success: false,
         message: "カートが見つかりませんでした",
       };
     }
 
-    const cartItem = await db.query.cartItemTable.findFirst({
-      where: and(
-        eq(cartItemTable.cartId, cart.id),
-        eq(cartItemTable.productId, productInfo.id),
-      ),
-    });
-    if (cartItem === undefined) {
+    const cartItemAndProductInfo = await db.select({
+      quantity: cartItemTable.quantity,
+      stock: productTable.stock,
+    }).from(cartItemTable)
+      .where(
+        and(
+          eq(cartItemTable.cartId, carts[0].cartId),
+          eq(cartItemTable.productId, productId),
+        )
+      )
+      .innerJoin(productTable, eq(cartItemTable.productId, productTable.id))
+      .limit(1)
+    console.log(cartItemAndProductInfo)
+    if (cartItemAndProductInfo.length === 0) {
       return {
         success: false,
         message: "カートに該当の商品がありません",
       };
     }
 
-    if (cartItem.quantity + 1 > productInfo.stock) {
+    if (cartItemAndProductInfo[0].quantity + 1 > cartItemAndProductInfo[0].stock) {
       return {
         success: false,
         message: "商品の数が在庫数を超えてしまいます",
@@ -67,10 +65,12 @@ export const addOneItemToCart = async (productId: string) => {
     await db
       .update(cartItemTable)
       .set({
-        quantity: sql`${cartItemTable.quantity}
-        + 1`,
+        quantity: sql`${cartItemTable.quantity}+ 1`,
       })
-      .where(eq(cartItemTable.id, cartItem.id));
+      .where(and(
+        eq(cartItemTable.cartId, carts[0].cartId),
+        eq(cartItemTable.productId, productId),
+      ));
 
     revalidatePath("/cart");
 
@@ -108,14 +108,14 @@ export const addItemToCart = async (
       userId = session.user.id;
     }
 
-    const cartId = getOrCreateCartId(userId)
+    const cartId = await getOrCreateCartId(userId)
 
     // update cart
     await db
       .insert(cartItemTable)
       .values({
         cartId: cartId,
-        productId: productInfo.id,
+        productId: productId,
         quantity: quantity,
       })
       .onConflictDoUpdate({
@@ -128,6 +128,7 @@ export const addItemToCart = async (
       message: "カートにアイテムを追加しました。",
     };
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -175,7 +176,10 @@ export const removeOneItemFromCart = async (productId: string) => {
         quantity: sql`${cartItemTable.quantity}
         -1`,
       })
-      .where(eq(cartItemTable.productId, productId));
+      .where(and(
+        eq(cartItemTable.productId, productId),
+        eq(cartItemTable.cartId, cart.id)
+      ));
 
     revalidatePath("/cart");
 
@@ -240,7 +244,7 @@ export const getCartItems = async (): Promise<GetCartItemsResponse> => {
       headers: await headers(),
     });
     if (session === null || session.user.isAnonymous) {
-      redirect("/signin?error=signin_required")
+      redirect("/signin")
     }
     const userId = session.user.id;
 
@@ -257,9 +261,9 @@ export const getCartItems = async (): Promise<GetCartItemsResponse> => {
         eq(cartTable.userId, userId),
         eq(productImageTable.displayOrder, 0)
       ))
-      .leftJoin(cartItemTable, eq(cartTable.id, cartItemTable.cartId))
-      .leftJoin(productTable, eq(cartItemTable.productId, productTable.id))
-      .leftJoin(productImageTable, eq(productImageTable.productId, productTable.id))
+      .innerJoin(cartItemTable, eq(cartTable.id, cartItemTable.cartId))
+      .innerJoin(productTable, eq(cartItemTable.productId, productTable.id))
+      .innerJoin(productImageTable, eq(productImageTable.productId, productTable.id))
 
     if (res === undefined) {
       return {
@@ -274,6 +278,7 @@ export const getCartItems = async (): Promise<GetCartItemsResponse> => {
       data: res
     }
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     console.error("Failed to fetch cart items:", error);
     return {
       success: false,

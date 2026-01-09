@@ -15,6 +15,13 @@
       "when": 1767858435819,
       "tag": "0001_woozy_meteorite",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767947858877,
+      "tag": "0002_worried_whiplash",
+      "breakpoints": true
     }
   ]
 }

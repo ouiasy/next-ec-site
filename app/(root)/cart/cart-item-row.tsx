@@ -13,7 +13,6 @@ import { formatJapaneseYen } from "@/lib/utils/process-price";
 import { toast } from "sonner";
 import {GetCartItemsData} from "@/types/dto/response/cart.actions.response";
 
-
 export const CartItemRow = ({ item }: { item: GetCartItemsData }) => {
   const [isPending, startTransition] = useTransition();
   const handleDecreaseButton = (productId: string) =>
@@ -21,7 +20,7 @@ export const CartItemRow = ({ item }: { item: GetCartItemsData }) => {
       const res = await removeOneItemFromCart(productId);
       // if not success show error toast.
       if (!res.success) {
-        toast.error("カートから商品を取り除くのに失敗しました。");
+        toast.error(res.message);
         return;
       }
     });
@@ -30,7 +29,7 @@ export const CartItemRow = ({ item }: { item: GetCartItemsData }) => {
       const res = await addOneItemToCart(productId);
       console.log(res);
       if (!res.success) {
-        toast.error("カートに商品を追加するのに失敗しました");
+        toast.error(res.message);
         return;
       }
     });
@@ -55,7 +54,7 @@ export const CartItemRow = ({ item }: { item: GetCartItemsData }) => {
         <Button
           className="cursor-pointer"
           disabled={isPending}
-          onClick={() => handleDecreaseButton(item.slug)} // todo: change to productid
+          onClick={() => handleDecreaseButton(item.productId)} // todo: change to productid
           variant="outline"
         >
           <Minus className="" />
@@ -74,13 +73,13 @@ export const CartItemRow = ({ item }: { item: GetCartItemsData }) => {
           className="cursor-pointer"
           disabled={isPending}
           variant="outline"
-          onClick={() => handleAddButton(item.slug)} // todo: change to productid
+          onClick={() => handleAddButton(item.productId)} // todo: change to productid
         >
           <Plus />
         </Button>
       </TableCell>
       <TableCell className="">
-        <span className="text-xl">{formatJapaneseYen(item.product.price)}</span>
+        <span className="text-xl">{formatJapaneseYen(item.priceInTax)}</span>
       </TableCell>
     </TableRow>
   );

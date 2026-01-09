@@ -11,7 +11,7 @@ import {GetCartItemsData} from "@/types/dto/response/cart.actions.response";
 
 
 type CartTableProps = {
-  items: GetCartItemsData[] | []
+  items: GetCartItemsData[]
 }
 
 export const CartTable = ({items}: CartTableProps) => {
@@ -26,7 +26,9 @@ export const CartTable = ({items}: CartTableProps) => {
       </TableHeader>
       <TableBody>
         {items.map((item) => {
-          return <CartItemRow item={item} key={item.slug}/>;
+          if (item.quantity > 0) {
+            return <CartItemRow item={item} key={item.slug}/>;
+          }
         })}
       </TableBody>
     </Table>

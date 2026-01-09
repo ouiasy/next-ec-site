@@ -5,17 +5,17 @@ export type SelectCartItemTable = typeof cartItemTable.$inferSelect;
 
 
 export type GetCartItemsData = {
-  productId: string | null;
-  slug: string | null;
-  name: string | null;
-  priceInTax: number | null;
-  quantity: number | null;
-  imageUrl: string | null;
+  productId: string;
+  slug: string;
+  name: string;
+  priceInTax: number;
+  quantity: number;
+  imageUrl: string;
 };
 
 export type GetCartItemsResponse =
   {
-    data: GetCartItemsData[] | [],
+    data: GetCartItemsData[],
     success: true,
   } | {
   success: false,

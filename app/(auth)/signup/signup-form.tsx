@@ -18,7 +18,8 @@ export const SignUpForm = () => {
 
   // TODO: need security fix...
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const callbackUrl = searchParams.get("callback") || "/";
+  console.log("callback is ", callbackUrl)
 
   useEffect(() => {
     if (data && !data.success && data.message) {

@@ -1,7 +1,8 @@
 import { db } from "@/db"
 import { cartItemTable, cartTable } from "@/db/schema/cart.schema";
 import { eq, max, sql } from "drizzle-orm";
-import { unionAll } from "drizzle-orm/sqlite-core";
+import {unionAll} from "drizzle-orm/pg-core";
+
 
 export const mergeAnonymousCart =
   async (anonymousUserId: string, newUserId: string) => {
@@ -13,7 +14,7 @@ export const mergeAnonymousCart =
       // anonymousUserIdのもつ商品を取得
       const itemsByAnonymous =
         db.select({
-          cartId: cartItemTable.id,
+          cartItemId: cartItemTable.id,
           productId: cartItemTable.productId,
           quantity: cartItemTable.quantity,
         })
@@ -23,7 +24,7 @@ export const mergeAnonymousCart =
       // newUserIdのもつ商品を取得
       const itemsByNewUser =
         db.select({
-          cartId: cartItemTable.id,
+          cartItemId: cartItemTable.id,
           productId: cartItemTable.productId,
           quantity: cartItemTable.quantity,
         })
@@ -58,7 +59,7 @@ export const mergeAnonymousCart =
         .values(itemsToInsert).onConflictDoUpdate({
           target: [cartItemTable.cartId, cartItemTable.productId],
           set: {
-            quantity: sql`excluded.quantity`
+            quantity: sql`excluded.quantity` //
           }
         })
 
