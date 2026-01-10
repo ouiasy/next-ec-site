@@ -8,7 +8,7 @@ import {Button} from "@/components/ui/button";
 import {useActionState, useEffect} from "react";
 import {registerShippingAddr} from "@/api/actions/shipping.actions";
 import {Spinner} from "@/components/ui/spinner";
-import {RegisterShippingAddrResponse} from "@/types/dto/request/addr.actions.response";
+import {RegisterShippingAddrResponse} from "@/types/dto/response/addr.actions.response";
 import {toast} from "sonner";
 
 const initialState: RegisterShippingAddrResponse = {

@@ -20,3 +20,18 @@ export type RegisterShippingAddrResponse = {
   fieldErrors?: Record<string, string[]>,
 }
 
+export type FindShippingAddrResponse = {
+  success: boolean,
+  message: string,
+  addresses: {
+    id: string,
+    lastName: string,
+    firstName: string,
+    postalCode: string,
+    prefecture: string,
+    city: string,
+    street: string,
+    building?: string | null,
+    isDefault: boolean,
+  }[]
+}

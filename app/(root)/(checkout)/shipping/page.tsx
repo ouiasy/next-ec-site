@@ -4,7 +4,7 @@ import { CheckoutProgressBar } from "@/app/(root)/(checkout)/checkout-progress-b
 import React from "react";
 
 const ShippingPage = async () => {
-
+  const addresses = await findShippingAddr();
   return (
     <>
       <CheckoutProgressBar currentStep={1}/>
