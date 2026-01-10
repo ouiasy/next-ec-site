@@ -10,7 +10,8 @@ export const addressTable =
     userId: text()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    name: text().notNull(),
+    lastName: text().notNull(),
+    firstName: text().notNull(),
     postalCode: text().notNull(),
     prefecture: text().notNull(),
     city: text().notNull(),
