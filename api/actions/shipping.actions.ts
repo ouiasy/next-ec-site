@@ -7,7 +7,7 @@ import {db} from "@/db";
 import {eq} from "drizzle-orm";
 import {z} from "zod";
 import {headers} from "next/headers";
-import {RegisterShippingAddrResponse} from "@/types/dto/request/addr.actions.response";
+import {FindShippingAddrResponse, RegisterShippingAddrResponse} from "@/types/dto/response/addr.actions.response";
 import {isRedirectError} from "next/dist/client/components/redirect-error";
 import {redirect} from "next/navigation";
 
@@ -15,7 +15,6 @@ export const registerShippingAddr = async (
   prevState: RegisterShippingAddrResponse,
   formData: FormData,
 ): Promise<RegisterShippingAddrResponse> => {
-  console.log("received", formData);
   const rawData = {
     lastName: formData.get("lastName") as string,
     firstName: formData.get("firstName") as string,
@@ -88,13 +87,8 @@ export const registerShippingAddr = async (
   }
 };
 
-type FindShippingAddrResult = {
-  success: boolean;
-  message?: string;
-  data?: typeof addressTable.$inferSelect;
-};
 
-export const findShippingAddr = async (): Promise<FindShippingAddrResult> => {
+export const findShippingAddr = async (): Promise<FindShippingAddrResponse> => {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -103,26 +97,37 @@ export const findShippingAddr = async (): Promise<FindShippingAddrResult> => {
       return {
         success: false,
         message: "ユーザーが見つかりません",
+        addresses: []
       };
     }
 
     const userId = session.user.id;
-    const address = await db.query.addressTable.findFirst({
-      where: eq(addressTable.userId, userId),
-    });
-    if (address === undefined) {
-    }
-    console.log("get address", address);
+
+    const res = await db.select({
+      id: addressTable.id,
+      firstName: addressTable.firstName,
+      lastName: addressTable.lastName,
+      postalCode: addressTable.postalCode,
+      prefecture: addressTable.prefecture,
+      city: addressTable.city,
+      street: addressTable.street,
+      building: addressTable.building,
+      isDefault: addressTable.isDefault
+    }).from(addressTable)
+      .where(eq(addressTable.userId, userId));
+
+    console.log("get address", res);
     return {
       success: true,
       message: "住所が見つかりました",
-      data: address,
+      addresses: res,
     };
   } catch (error) {
     console.log(error);
     return {
       success: false,
       message: "登録した住所の検索中にエラーが生じました",
+      addresses: []
     };
   }
 };
