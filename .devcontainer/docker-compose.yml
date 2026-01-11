@@ -19,5 +19,17 @@ services:
     volumes:
       - postgres-for-ecsite:/var/lib/postgres/data
 
+  test-db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    environment:
+      POSTGRES_USER: "testuser"
+      POSTGRES_PASSWORD: "my_password"
+      POSTGRES_DB: "ecsite-test"
+    volumes:
+      - postgres-for-ecsite-test:/var/lib/postgres/data
+
 volumes:
   postgres-for-ecsite:
+  postgre-for-ecsite-test:
