@@ -1,8 +1,8 @@
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { users } from "@/db/schema/user.schema";
-import { ulid } from "ulid";
-import { productTable } from "@/db/schema/product.schema";
-import { prefectures } from "@/zod/dataset/prefecture";
+import {integer, pgTable, text, timestamp} from "drizzle-orm/pg-core";
+import {users} from "@/db/schema/user.schema";
+import {ulid} from "ulid";
+import {productTable} from "@/db/schema/product.schema";
+import {prefectures} from "@/zod/dataset/prefecture";
 
 export const orderTable =
   pgTable("orders", {
@@ -11,7 +11,7 @@ export const orderTable =
       .$defaultFn(() => ulid()),
     userId: text()
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+      .references(() => users.id, {onDelete: "cascade"}),
     itemsSubtotal: integer()
       .notNull(),
     taxTotal: integer()
@@ -20,33 +20,22 @@ export const orderTable =
       .notNull(),
     grandTotal: integer()
       .notNull(),
-    currency: text({ enum: ["JPY"] })
-      .default("JPY")
-      .notNull(), //日本円だけにする
-    paymentStatus:
-      text({ enum: ["pending", "paid", "failed", "refunded"] })
+    orderStatus:
+      text({enum: ["pending", "paid", "completed", "cancelled"]})
         .default("pending")
         .notNull(),
-    shippingStatus:
-      text({ enum: ["preparing", "shipped", "delivered", "returned"] })
-        .default("preparing")
-        .notNull(),
-    orderStatus:
-      text({ enum: ["open", "closed", "cancelled"] })
-        .default("open")
-        .notNull(),
 
-    createdAt: timestamp({ withTimezone: true })
+    createdAt: timestamp({withTimezone: true})
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp({ withTimezone: true })
+    updatedAt: timestamp({withTimezone: true})
       .notNull()
       .defaultNow()
       .$onUpdateFn(() => new Date()),
   })
 
 
-export const orderItems = pgTable("order_items", {
+export const orderItemsTable = pgTable("order_items", {
   id: text().primaryKey()
     .$defaultFn(() => ulid()),
 
@@ -72,7 +61,7 @@ export const shippingAddrTable =
       .references(() => orderTable.id),
     name: text().notNull(),
     postalCode: text().notNull(),
-    prefecture: text({ enum: prefectures }).notNull(),
+    prefecture: text({enum: prefectures}).notNull(),
     city: text().notNull(),
     street: text().notNull(),
     building: text(),
@@ -89,7 +78,7 @@ export const billingAddrTable =
       .references(() => orderTable.id),
     name: text().notNull(),
     postalCode: text().notNull(),
-    prefecture: text({ enum: prefectures }).notNull(),
+    prefecture: text({enum: prefectures}).notNull(),
     city: text().notNull(),
     street: text().notNull(),
     building: text(),
@@ -105,13 +94,23 @@ export const shipmentTable =
       .references(() => orderTable.id),
 
     trackingNum: text().notNull(),
-    carrier: text({enum: [""]}).notNull(),
-    shipped_at: timestamp({ withTimezone: true }),
+    carrier: text().notNull(),
+    status: text({
+      enum: [
+        "preparing",   // 準備中
+        "shipped",     // 発送済み
+        "in_transit",  // 配送中（任意）
+        "delivered",   // 配達完了
+        "returned",    // 返送
+        "lost",        // 紛失
+      ]
+    }).notNull(),
 
-    createdAt: timestamp({ withTimezone: true })
+    shippedAt: timestamp({withTimezone: true}),
+    createdAt: timestamp({withTimezone: true})
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp({ withTimezone: true })
+    updatedAt: timestamp({withTimezone: true})
       .notNull()
       .defaultNow()
       .$onUpdateFn(() => new Date()),
@@ -132,13 +131,19 @@ export const paymentTable = pgTable("payments", {
   amount: integer().notNull(),
   currency: text({enum: ["JPY"]}).notNull(),
 
-  status: text({enum: ["pending", "succeeded", "failed", "refund"]})
-    .default("pending"),
+  status: text({enum: [
+      "pending",     // 支払い待ち
+      "succeeded",   // 成功
+      "failed",      // 失敗
+      "refunded",    // 返金済み
+    ]})
+    .default("pending")
+    .notNull(),
 
-  createdAt: timestamp({ withTimezone: true })
+  createdAt: timestamp({withTimezone: true})
     .notNull()
     .defaultNow(),
-  updatedAt: timestamp({ withTimezone: true })
+  updatedAt: timestamp({withTimezone: true})
     .notNull()
     .defaultNow()
     .$onUpdateFn(() => new Date()),
