@@ -19,7 +19,7 @@ services:
       POSTGRES_PASSWORD: "my_password"
       POSTGRES_DB: "ecsite"
     volumes:
-      - postgres-for-ecsite:/var/lib/postgresql/data
+      - postgres-for-ecsite:/var/lib/postgresql
 
   test-db:
     build:
@@ -32,7 +32,7 @@ services:
       POSTGRES_PASSWORD: "my_password"
       POSTGRES_DB: "ecsite-test"
     volumes:
-      - postgres-for-ecsite-test:/var/lib/postgresql/data
+      - postgres-for-ecsite-test:/var/lib/postgresql
 
 volumes:
   postgres-for-ecsite:
