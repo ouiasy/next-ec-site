@@ -13,7 +13,7 @@
     4983,
     5432,
     5433,
-    8080,
+    8080
   ],
   onCreateCommand: "cp .env.example .env",
   // Use 'postCreateCommand' to run commands after the container is created.
