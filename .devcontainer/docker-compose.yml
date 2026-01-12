@@ -36,4 +36,4 @@ services:
 
 volumes:
   postgres-for-ecsite:
-  postgre-for-ecsite-test:
+  postgres-for-ecsite-test:
