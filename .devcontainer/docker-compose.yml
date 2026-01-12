@@ -12,6 +12,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.db
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: "appuser"
       POSTGRES_PASSWORD: "my_password"
@@ -23,6 +25,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.db
+    ports:
+      - "5433:5433"
     environment:
       POSTGRES_USER: "testuser"
       POSTGRES_PASSWORD: "my_password"
