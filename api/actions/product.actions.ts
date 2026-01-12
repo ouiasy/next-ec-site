@@ -39,7 +39,6 @@ export const getLatestProducts = async (): Promise<GetLatestProductsResponse[]> 
 
 
 export const getProductBySlug = async (slug: string): Promise<GetProductBySlugResponse | null> => {
-  console.log(slug)
   try {
     const [data] = await db.select({
       id: productTable.id,
