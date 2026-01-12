@@ -131,3 +131,8 @@ export const findShippingAddr = async (): Promise<FindShippingAddrResponse> => {
     };
   }
 };
+
+
+export const selectExistingAddr = async () => {
+  console.log("called")
+}

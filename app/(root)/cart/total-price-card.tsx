@@ -1,12 +1,9 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { calculateSubtotal } from "@/lib/utils/process-price";
 import { formatJapaneseYen } from "@/lib/utils/process-price";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import {countItems} from "@/lib/utils";
 import {GetCartItemsData} from "@/types/dto/response/cart.actions.response";
-
+import {CheckoutButton} from "@/app/(root)/cart/checkout-btn";
 type TotalPriceCardProps = {
   items: GetCartItemsData[];
 }
@@ -23,12 +20,7 @@ export const TotalPriceCard = ({ items }: TotalPriceCardProps) => {
           <p>{countItems(items)}点</p>
           <p>{formatJapaneseYen(calculateSubtotal(items))}</p>
         </div>
-        <Button className="w-full cursor-pointer items-center" asChild>
-          <Link href={"/shipping"}>
-            <ArrowRight className="" />
-            チェックアウト
-          </Link>
-        </Button>
+        <CheckoutButton/>
       </CardContent>
     </Card>
   );

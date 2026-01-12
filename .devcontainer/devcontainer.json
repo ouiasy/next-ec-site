@@ -9,7 +9,11 @@
   service: "app",
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [
-    3000
+    3000,
+    4983,
+    5432,
+    5433,
+    8080
   ],
   onCreateCommand: "cp .env.example .env",
   // Use 'postCreateCommand' to run commands after the container is created.

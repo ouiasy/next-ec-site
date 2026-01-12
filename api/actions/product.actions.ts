@@ -13,7 +13,7 @@ export const getLatestProducts = async (): Promise<GetLatestProductsResponse[]> 
       name: productTable.name,
       slug: productTable.slug,
       description: productTable.description,
-      priceInTax: productTable.priceInTax,
+      priceInTax: productTable.priceAfterTax,
       brand: productTable.brand,
       rating: productTable.rating,
       numReviews: productTable.numReviews,
@@ -37,15 +37,15 @@ export const getLatestProducts = async (): Promise<GetLatestProductsResponse[]> 
   }
 };
 
+
 export const getProductBySlug = async (slug: string): Promise<GetProductBySlugResponse | null> => {
-  console.log(slug)
   try {
     const [data] = await db.select({
       id: productTable.id,
       name: productTable.name,
       slug: productTable.slug,
       description: productTable.description,
-      priceInTax: productTable.priceInTax,
+      priceInTax: productTable.priceAfterTax,
       brand: productTable.brand,
       rating: productTable.rating,
       numReviews: productTable.numReviews,

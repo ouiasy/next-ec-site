@@ -254,7 +254,7 @@ export const getCartItems = async (): Promise<GetCartItemsResponse> => {
       name: productTable.name,
       imageUrl: productImageTable.url,
       quantity: cartItemTable.quantity,
-      priceInTax: productTable.priceInTax,
+      priceInTax: productTable.priceAfterTax,
     })
       .from(cartTable)
       .where(and(
