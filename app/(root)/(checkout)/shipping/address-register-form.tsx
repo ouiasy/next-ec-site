@@ -4,7 +4,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {prefectures} from "@/zod/dataset/prefecture";
 import {Button} from "@/components/ui/button";
 import {useActionState} from "react";
-import {registerShippingAddr} from "@/api/actions/shipping.actions";
+import {registerShippingAddr} from "@/actions/shipping.actions";
 import {Spinner} from "@/components/ui/spinner";
 import {RegisterShippingAddrResponse} from "@/types/dto/response/addr.actions.response";
 import {Card, CardContent, CardTitle} from "@/components/ui/card";

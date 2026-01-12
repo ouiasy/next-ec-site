@@ -1,4 +1,4 @@
-import {findShippingAddr} from "@/api/actions/shipping.actions";
+import {findShippingAddr} from "@/actions/shipping.actions";
 import {CheckoutProgressBar} from "@/app/(root)/(checkout)/checkout-progress-bar";
 import React from "react";
 import {AddressManager} from "@/app/(root)/(checkout)/shipping/address-manager";

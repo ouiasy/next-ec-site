@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import {useActionState, useEffect} from "react";
-import {checkOutAction} from "@/api/actions/checkout.actions";
+import {checkOutAction} from "@/actions/checkout.actions";
 import {Spinner} from "@/components/ui/spinner"
 import {toast} from "sonner";
 

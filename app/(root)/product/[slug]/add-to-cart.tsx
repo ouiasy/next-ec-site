@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { CartItemPayload } from "@/types/schema/cart.type";
-import { addItemToCart } from "@/api/actions/cart.actions";
+import { addItemToCart } from "@/actions/cart.actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
