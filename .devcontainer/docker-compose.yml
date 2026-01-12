@@ -19,20 +19,20 @@ services:
       POSTGRES_PASSWORD: "my_password"
       POSTGRES_DB: "ecsite"
     volumes:
-      - postgres-for-ecsite:/var/lib/postgres/data
+      - postgres-for-ecsite:/var/lib/postgresql/data
 
   test-db:
     build:
       context: .
       dockerfile: Dockerfile.db
     ports:
-      - "5433:5433"
+      - "5433:5432"
     environment:
       POSTGRES_USER: "testuser"
       POSTGRES_PASSWORD: "my_password"
       POSTGRES_DB: "ecsite-test"
     volumes:
-      - postgres-for-ecsite-test:/var/lib/postgres/data
+      - postgres-for-ecsite-test:/var/lib/postgresql/data
 
 volumes:
   postgres-for-ecsite:
