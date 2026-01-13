@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {Cart, cartDomain, CartItem} from "@/domain/cart.domain";
+import {Cart, cartDomain, CartItem} from "@/domain/cart/cart.domain";
 
 const USERID = "dummy userID"
 // デフォルト値（ひな形）

@@ -1,4 +1,4 @@
-import {Cart, CartRepository} from "@/domain/cart.domain";
+import {Cart, CartRepository} from "@/domain/cart/cart.domain";
 import {cartItemTable, cartTable} from "@/db/schema/cart.schema";
 import {eq} from "drizzle-orm";
 import {DB} from "@/db";

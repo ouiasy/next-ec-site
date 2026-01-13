@@ -1,7 +1,7 @@
 
 
 import { ulid } from "ulid";
-import {Product} from "@/domain/product.domain";
+import {Product} from "@/domain/product/product.domain";
 
 // デフォルト値を持つテスト用ファクトリ
 export const createTestProduct = (
