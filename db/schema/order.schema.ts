@@ -1,6 +1,5 @@
 import {integer, pgTable, text, timestamp} from "drizzle-orm/pg-core";
 import {users} from "@/db/schema/user.schema";
-import {ulid} from "ulid";
 import {productTable} from "@/db/schema/product.schema";
 import {prefectures} from "@/zod/dataset/prefecture";
 
