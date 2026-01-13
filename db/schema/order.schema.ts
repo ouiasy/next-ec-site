@@ -7,8 +7,7 @@ import {prefectures} from "@/zod/dataset/prefecture";
 export const orderTable =
   pgTable("orders", {
     id: text()
-      .primaryKey()
-      .$defaultFn(() => ulid()),
+      .primaryKey(),
     userId: text()
       .notNull()
       .references(() => users.id, {onDelete: "cascade"}),
@@ -26,18 +25,14 @@ export const orderTable =
         .notNull(),
 
     createdAt: timestamp({withTimezone: true})
-      .notNull()
-      .defaultNow(),
+      .notNull(),
     updatedAt: timestamp({withTimezone: true})
-      .notNull()
-      .defaultNow()
-      .$onUpdateFn(() => new Date()),
+      .notNull(),
   })
 
 
 export const orderItemsTable = pgTable("order_items", {
-  id: text().primaryKey()
-    .$defaultFn(() => ulid()),
+  id: text().primaryKey(),
 
   orderId: text().notNull()
     .references(() => orderTable.id),
@@ -53,8 +48,7 @@ export const orderItemsTable = pgTable("order_items", {
 export const shippingAddrTable =
   pgTable("shipping_addresses", {
     id: text()
-      .primaryKey()
-      .$defaultFn(() => ulid()),
+      .primaryKey(),
     orderId: text()
       .notNull()
       .unique()
@@ -70,8 +64,7 @@ export const shippingAddrTable =
 export const billingAddrTable =
   pgTable("billing_addresses", {
     id: text()
-      .primaryKey()
-      .$defaultFn(() => ulid()),
+      .primaryKey(),
     orderId: text()
       .notNull()
       .unique()
@@ -86,8 +79,7 @@ export const billingAddrTable =
 
 export const shipmentTable =
   pgTable("shipments", {
-    id: text().primaryKey()
-      .$defaultFn(() => ulid()),
+    id: text().primaryKey(),
     orderId: text()
       .notNull()
       // .unique()  // 分割配送対応のため
@@ -108,17 +100,13 @@ export const shipmentTable =
 
     shippedAt: timestamp({withTimezone: true}),
     createdAt: timestamp({withTimezone: true})
-      .notNull()
-      .defaultNow(),
+      .notNull(),
     updatedAt: timestamp({withTimezone: true})
-      .notNull()
-      .defaultNow()
-      .$onUpdateFn(() => new Date()),
+      .notNull(),
   })
 
 export const paymentTable = pgTable("payments", {
-  id: text().primaryKey()
-    .$defaultFn(() => ulid()),
+  id: text().primaryKey(),
   orderId: text()
     .notNull()
     .references(() => orderTable.id),
@@ -141,10 +129,7 @@ export const paymentTable = pgTable("payments", {
     .notNull(),
 
   createdAt: timestamp({withTimezone: true})
-    .notNull()
-    .defaultNow(),
+    .notNull(),
   updatedAt: timestamp({withTimezone: true})
-    .notNull()
-    .defaultNow()
-    .$onUpdateFn(() => new Date()),
+    .notNull(),
 })

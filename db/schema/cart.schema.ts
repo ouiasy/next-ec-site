@@ -1,17 +1,14 @@
 import {users} from "@/db/schema/user.schema";
 import {productTable} from "@/db/schema/product.schema";
-import {ulid} from "ulid";
 import {index, integer, pgTable, text, timestamp, unique} from "drizzle-orm/pg-core";
 
 
 export const cartTable = pgTable("carts", {
   id: text()
-    .primaryKey()
-    .$defaultFn(() => ulid()),
+    .primaryKey(),
   userId: text().references(() => users.id, {onDelete: "cascade"}),
   createdAt: timestamp({withTimezone: true})
     .notNull()
-    .defaultNow(),
 }, (table) => [
   index("cart_user_id_idx").on(table.userId)
 ]);
@@ -20,8 +17,7 @@ export const cartItemTable = pgTable(
   "cart_items",
   {
     id: text()
-      .primaryKey()
-      .$defaultFn(() => ulid()),
+      .primaryKey(),
     cartId: text()
       .notNull()
       .references(() => cartTable.id, {onDelete: "cascade"}),
@@ -30,12 +26,9 @@ export const cartItemTable = pgTable(
       .references(() => productTable.id, {onDelete: "cascade"}),
     quantity: integer().notNull(),
     createdAt: timestamp({withTimezone: true})
-      .notNull()
-      .defaultNow(),
+      .notNull(),
     updatedAt: timestamp({withTimezone: true})
-      .notNull()
-      .defaultNow()
-      .$onUpdateFn(() => new Date()),
+      .notNull(),
   },
   (table) => [
     unique().on(table.cartId, table.productId),
