@@ -1,6 +1,6 @@
 "use client";
 import React, {useActionState, useEffect} from 'react';
-import {signOutUser} from "@/api/actions/user.actions";
+import {signOutUser} from "@/actions/user.actions";
 import {Button} from "@/components/ui/button";
 import {toast} from "sonner";
 import {useRouter} from "next/navigation";

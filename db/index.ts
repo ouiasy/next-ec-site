@@ -17,3 +17,5 @@ export const db = drizzle(process.env.DB_URL!, {
   },
   casing: "snake_case",
 });
+
+export type DB = typeof db

@@ -2,7 +2,7 @@ import {useActionState, useState} from "react";
 import {AddressCard} from "@/app/(root)/(checkout)/shipping/address-card";
 import {FindShippingAddrResponse} from "@/types/dto/response/addr.actions.response";
 import {Input} from "@/components/ui/input";
-import {selectExistingAddr} from "@/api/actions/shipping.actions";
+import {selectExistingAddr} from "@/actions/shipping.actions";
 import {Button} from "@/components/ui/button";
 import {Field} from "@/components/ui/field";
 

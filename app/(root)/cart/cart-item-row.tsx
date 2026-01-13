@@ -8,7 +8,7 @@ import { useTransition } from "react";
 import {
   removeOneItemFromCart,
   addOneItemToCart,
-} from "@/api/actions/cart.actions";
+} from "@/actions/cart.actions";
 import { formatJapaneseYen } from "@/lib/utils/process-price";
 import { toast } from "sonner";
 import {GetCartItemsData} from "@/types/dto/response/cart.actions.response";

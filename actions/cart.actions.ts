@@ -10,8 +10,10 @@ import {productImageTable, productTable} from "@/db/schema/product.schema";
 import {revalidatePath} from "next/cache";
 import {redirect} from "next/navigation";
 import {GetCartItemsResponse} from "@/types/dto/response/cart.actions.response";
-import {getOrCreateCartId} from "@/api/utils/cart.infra";
+import {getOrCreateCartId} from "@/repository/utils/cart.infra";
 import {isRedirectError} from "next/dist/client/components/redirect-error";
+import {cartRepository} from "@/repository";
+
 
 export const addOneItemToCart = async (productId: string) => {
   try {
@@ -19,16 +21,13 @@ export const addOneItemToCart = async (productId: string) => {
       headers: await headers(),
     });
     if (session === null) {
-      return {
-        success: false,
-        message: "ユーザーが見つかりません。ログインしてください。",
-      };
+      redirect("/signin?callback=/cart")
     }
 
-    const carts = await db.select({
-      cartId: cartTable.id,
-    }).from(cartTable).where(eq(cartTable.userId, session.user.id)).limit(1)
-    if (carts.length === 0) {
+    const userID = session.user.id
+
+    const cart = cartRepository.pickCartByUserID(userID)
+    if (cart === null) {
       return {
         success: false,
         message: "カートが見つかりませんでした",

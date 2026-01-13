@@ -1,4 +1,4 @@
-import { getCartItems } from "@/api/actions/cart.actions";
+import { getCartItems } from "@/actions/cart.actions";
 import { CartTable } from "./cart-table";
 import { TotalPriceCard } from "./total-price-card";
 

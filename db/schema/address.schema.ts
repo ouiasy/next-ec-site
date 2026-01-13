@@ -1,12 +1,10 @@
 import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { users } from "./user.schema";
-import { ulid } from "ulid";
 
 export const addressTable =
   pgTable("addresses", {
     id: text()
-      .primaryKey()
-      .$defaultFn(() => ulid()),
+      .primaryKey(),
     userId: text()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -19,12 +17,9 @@ export const addressTable =
     building: text(),
     isDefault: boolean().notNull().default(false),
     createdAt: timestamp({ withTimezone: true })
-      .notNull()
-      .defaultNow(),
+      .notNull(),
     updatedAt: timestamp({ withTimezone: true })
-      .notNull()
-      .defaultNow()
-      .$onUpdateFn(() => new Date()),
+      .notNull(),
   }, (table) => [
     index("address_user_id_idx").on(table.userId)
   ]);
