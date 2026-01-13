@@ -8,17 +8,14 @@ export const productTable = pgTable("products", {
     .$defaultFn(() => ulid()),
   name: text().notNull(),
   slug: text().notNull().unique(),
-  categoryId: text().notNull()
+  categoryId: text()
     .references(() => categoryTable.id, { onDelete: "set null" }),
   description: text().notNull(),
   priceBeforeTax: integer().notNull(),
   taxRatePercentage: integer().notNull(),
-  priceAfterTax: integer().generatedAlwaysAs(
-    (): SQL =>
-      sql`CAST
-          (${productTable.priceBeforeTax} * (${productTable.taxRatePercentage} + 100) / 100 + 0.5 AS INTEGER)`,
-  ).notNull(),
-  brand: text(),
+  priceAfterTax: integer().notNull(),
+  brandId: text()
+    .references(() => brandTable.id, {onDelete: "set null"}),
   rating: real(),
   numReviews: integer(),
   stock: integer().notNull(),
@@ -63,5 +60,14 @@ export const categoryTable =
     slug: text().notNull().unique(),
     parentId: text() // rootはnull
       .references((): AnyPgColumn => categoryTable.id, { onDelete: "cascade" }),
+    description: text(),
+  })
+
+export const brandTable =
+  pgTable("brands", {
+    id: text().primaryKey()
+      .$defaultFn(() => ulid()),
+    name: text().notNull().unique(),
+    slug: text().notNull().unique(),
     description: text(),
   })
