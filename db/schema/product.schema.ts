@@ -1,11 +1,9 @@
 import { index, integer, real, pgTable, text, boolean, timestamp, AnyPgColumn } from "drizzle-orm/pg-core";
-import { ulid } from "ulid";
 
 export const productTable = pgTable("products", {
   id: text()
     .primaryKey(),
   name: text().notNull(),
-  slug: text().notNull().unique(),
   categoryId: text()
     .references(() => categoryTable.id, { onDelete: "set null" }),
   description: text().notNull(),
