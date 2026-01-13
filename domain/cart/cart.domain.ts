@@ -58,7 +58,6 @@ export const cartDomain = {
     }
   },
 
-
   removeCartItem: (cart: Cart, productID: string, quantity: number): Cart => {
     const now = new Date()
 
@@ -83,7 +82,46 @@ export const cartDomain = {
   },
 
 
-  // mergeCartItem: (cart: Cart, productID: string, quantity: number): Cart => {}
+  /**
+   * targetカートにsrcカートをマージする。同じ商品があった場合には多い方の個数を採用する。
+   * @param target - マージ先のメインのカート(ログインユーザーのカートなど)
+   * @param src - マージするカート(匿名ログインのカートなど)
+   * @return Cart - マージ後のカート
+   */
+  mergeCartItem: (target: Cart, src: Cart): Cart => {
+
+    const now = new Date()
+
+    const tmpItems = new Map<string, CartItem>() // (productid, item)
+    target.items.forEach(item => tmpItems.set(item.productID, item))
+
+    for (const item of src.items) {
+      const existItem = tmpItems.get(item.productID)
+      if (existItem) {
+        const newQuantity = Math.max(existItem.quantity, item.quantity)
+        tmpItems.set(item.productID, {
+          ...existItem,
+          quantity: newQuantity,
+          updatedAt: now,
+        })
+        continue
+      }
+
+      tmpItems.set(item.productID, {
+        ...item,
+        updatedAt: now,
+      })
+    }
+
+    return {
+      id: target.id,
+      items: Array.from(tmpItems.values()),
+      userID: target.userID,
+      createdAt: target.createdAt,
+    }
+  }
+
+
 }
 
 export interface CartRepository {
