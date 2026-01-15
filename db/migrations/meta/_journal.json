@@ -71,6 +71,13 @@
       "when": 1768392338981,
       "tag": "0009_lively_kingpin",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1768445296881,
+      "tag": "0010_overjoyed_reaper",
+      "breakpoints": true
     }
   ]
 }

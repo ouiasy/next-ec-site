@@ -1,0 +1,1 @@
+ALTER TABLE "shipments" RENAME COLUMN "tracking_num" TO "tracking_id";
