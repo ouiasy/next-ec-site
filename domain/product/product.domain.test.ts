@@ -111,6 +111,22 @@ describe("productDomain", () => {
 			});
 			expect(product.isOk()).toBe(false);
 		});
+
+		test("在庫が負の場合はエラー", () => {
+			const product = productDomain.create({
+				name: "name",
+				categoryId: ulid(),
+				description: "description example",
+				productImages: [],
+				priceBeforeTax: 2000,
+				taxRate: 10,
+				brandId: ulid(),
+				rating: null,
+				stock: -50,
+				isFeatured: true,
+			});
+			expect(product.isOk()).toBe(false);
+		});
 	});
 
 	describe("update", () => {
@@ -152,6 +168,30 @@ describe("productDomain", () => {
 			expect(res.updatedAt.getTime()).toBeGreaterThan(product.updatedAt.getTime());
 		});
 
+	});
+
+	describe("createImage", () => {
+		test("正常に画像が作成される", () => {
+			const image = productDomain.createImage({
+				url: "http://example.com",
+				imageName: null,
+				displayOrd: 0,
+			})._unsafeUnwrap();
+			expect(image.id).toBeDefined();
+			expect(image.url).toBe("http://example.com");
+			expect(image.imageName).toBeNull();
+			expect(image.displayOrd).toBe(0);
+			expect(image.createdAt).toBeInstanceOf(Date);
+		});
+
+		test("画像URLが空の場合はエラー", () => {
+			const image = productDomain.createImage({
+				url: " ",
+				imageName: null,
+				displayOrd: 0,
+			});
+			expect(image.isOk()).toBe(false);
+		});
 	});
 
 	describe("changeStockBy", () => {

@@ -2,7 +2,8 @@ export type ProductDomainError =
 	| EmptyValueError
 	| InvalidPriceError
 	| InvalidTaxRateError
-	| InvalidStockError;
+	| InvalidStockError
+	| InvalidDisplayOrderError;
 
 export class EmptyValueError extends Error {
 	public override readonly name = "EmptyProductNameError";
@@ -35,3 +36,12 @@ export class InvalidStockError extends Error {
 		super(message, options);
 	}
 }
+
+export class InvalidDisplayOrderError extends Error {
+	public override readonly name = "InvalidDisplayOrderError";
+
+	constructor(message: string, options?: ErrorOptions) {
+		super(message, options);
+	}
+}
+

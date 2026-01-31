@@ -2,6 +2,7 @@ import { err, ok, Result } from "neverthrow";
 import { isValid, ULID, ulid } from "ulid";
 import {
 	EmptyValueError,
+	InvalidDisplayOrderError,
 	InvalidPriceError,
 	InvalidStockError,
 	InvalidTaxRateError,
@@ -54,8 +55,8 @@ export type UpdateProductInput = Partial<
 export const productDomain = {
 	/**
 	 * 新たに商品を作成する
-	 * @param input
-	 * @returns
+	 * @param input 作成する商品
+	 * @returns 作成した商品
 	 */
 	create: (input: CreateProductInput): Result<Product, ProductDomainError> => {
 		const safeName = input.name.trim();
@@ -107,8 +108,8 @@ export const productDomain = {
 
 	/**
 	 * 商品情報をupdateする
-	 * @param product
-	 * @param override
+	 * @param product 更新前の商品
+	 * @param updates 更新後の商品
 	 */
 	update: (product: Product, updates: UpdateProductInput): Result<Product, ProductDomainError> => {
 		const newPriceBeforeTax = updates.priceBeforeTax ?? product.priceBeforeTax;
@@ -117,9 +118,15 @@ export const productDomain = {
 		const newStock = updates.stock ?? product.stock;
 
 		const newName = updates.name ?? product.name;
+		const safeName = newName.trim();
+		if (safeName.length === 0) {
+			return err(new EmptyValueError("商品名を入力してください"));
+		}
 
-		if (newName.length === 0) {
-			return err(new EmptyProductNameError("商品名を入力してください"));
+		const newDescription = updates.description ?? product.description;
+		const safeDescription = newDescription.trim();
+		if (safeDescription.length === 0) {
+			return err(new EmptyValueError("商品説明を入力してください"));
 		}
 
 		if (newPriceBeforeTax < 0) {
@@ -137,8 +144,8 @@ export const productDomain = {
 
 		return ok({
 			...product,
-			name: newName,
-			description: updates.description ?? product.description,
+			name: safeName,
+			description: safeDescription,
 			brandId: updates.brandId ?? product.brandId,
 			categoryId: updates.categoryId ?? product.categoryId,
 			priceBeforeTax: newPriceBeforeTax,
@@ -153,16 +160,26 @@ export const productDomain = {
 
 	/**
 	 * 商品画像エンティティを作成する
-	 * @param input
-	 * @returns
+	 * @param input 作成する商品画像
+	 * @returns 作成した商品画像
 	 */
 	createImage: (
 		input: CreateImageInput,
 	): Result<ProductImage, ProductDomainError> => {
+		const safeUrl = input.url.trim();
+		if (safeUrl.length === 0) {
+			return err(new EmptyValueError("画像URLを入力してください"));
+		}
+
+		const safeDisplayOrd = input.displayOrd;
+		if (safeDisplayOrd < 0) {
+			return err(new InvalidDisplayOrderError("表示順エラーが生じました"));
+		}
+
 		const now = new Date();
 		return ok({
 			id: ulid(),
-			url: input.url,
+			url: safeUrl,
 			imageName: input.imageName,
 			displayOrd: input.displayOrd,
 			createdAt: now,
@@ -170,6 +187,12 @@ export const productDomain = {
 		});
 	},
 
+	/**
+	 * 在庫数を変更する
+	 * @param product 在庫を変更する商品
+	 * @param by 在庫数を変更する数
+	 * @returns 在庫を変更した商品
+	 */
 	changeStockBy: (
 		product: Product,
 		by: number,
@@ -183,6 +206,11 @@ export const productDomain = {
 		});
 	},
 
+	/**
+	 * レビュー数を加算する
+	 * @param product レビュー数を加算する商品
+	 * @returns レビュー数を加算した商品
+	 */
 	addNumReviews: (product: Product): Product => {
 		return {
 			...product,
@@ -190,6 +218,12 @@ export const productDomain = {
 		};
 	},
 
+	/**
+	 * おすすめフラグを変更する
+	 * @param product おすすめフラグを変更する商品
+	 * @param state おすすめフラグ
+	 * @returns おすすめフラグを変更した商品
+	 */
 	changeIsFeatured: (product: Product, state: boolean): Product => {
 		return {
 			...product,
