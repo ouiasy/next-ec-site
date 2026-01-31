@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
 import { orderDomain } from "@/domain/order/order.domain";
-import { CreateOrderInput, Address } from "@/domain/order/order.types";
+import { CreateOrderInput, OrderAddress } from "@/domain/order/order.types";
 
 describe("orderDomain", () => {
-  const dummyAddress: Address = {
+  const dummyAddress: OrderAddress = {
     name: "Taro Yamada",
     postalCode: "123-4567",
     prefecture: "Tokyo",

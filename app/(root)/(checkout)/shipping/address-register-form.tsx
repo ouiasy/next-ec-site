@@ -1,7 +1,7 @@
 import {Field, FieldError, FieldGroup, FieldLabel} from "@/components/ui/field";
 import {Input} from "@/components/ui/input"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {prefectures} from "@/zod/dataset/prefecture";
+import {PREFECTURES} from "@/zod/dataset/prefecture";
 import {Button} from "@/components/ui/button";
 import {useActionState} from "react";
 import {registerShippingAddr} from "@/actions/shipping.actions";
@@ -78,7 +78,7 @@ export const AddressRegisterForm = ({onClose}: ShippingAddressFormProps) => {
                 </SelectTrigger>
                 <SelectContent>
                   {
-                    prefectures.map(prefecture => (
+                    PREFECTURES.map(prefecture => (
                       <SelectItem value={prefecture} key={prefecture}>{prefecture}</SelectItem>
                     ))
                   }

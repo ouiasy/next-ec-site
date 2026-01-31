@@ -1,5 +1,7 @@
 import {describe, expect, test} from "vitest";
 import {addressDomain} from "./address.domain";
+import { updateUser } from "better-auth/api";
+import { updateTag } from "next/cache";
 
 describe("address domain", () => {
   describe("create", () => {
@@ -51,4 +53,43 @@ describe("address domain", () => {
       expect(address.building).toBeNull();
     });
   });
+
+  describe("update", () => {
+    test("addressが正しく更新されること", () => {
+      const input = {
+        userId: "user_1",
+        lastName: "山田",
+        firstName: "太郎",
+        postalCode: "123-4567",
+        prefecture: "東京都",
+        city: "新宿区",
+        street: "西新宿1-1-1",
+        building: "ビル1F",
+        isDefault: true,
+      } as const;
+
+      const address = addressDomain.create(input)._unsafeUnwrap();
+
+      const update = {
+        userId: "user_2",
+        lastName: "山元",
+        firstName: "二郎",
+        postalCode: "999-9999",
+        prefecture: "大阪府",
+        city: "市町村",
+        street: "ストリート",
+        building: null,
+        isDefault: false,
+      } as const;
+
+      const newAddress = addressDomain.update(address, update);
+
+      expect(newAddress.id).toBe(address.id);
+      expect(newAddress.userId).toBe(address.userId);
+      expect(newAddress.lastName).toBe(update.lastName);
+      expect(newAddress.firstName).toBe(update.firstName)
+      expect(newAddress.postalCode).toBe()
+
+    })
+  })
 });

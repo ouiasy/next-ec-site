@@ -1,4 +1,5 @@
 "use client";
+import { CartItemRow } from "@/components/shared/cart/cart-item-row";
 import {
 	Table,
 	TableBody,
@@ -7,10 +8,10 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { CartItem } from "@/domain/cart/cart.domain";
-import { CartItemRow } from "../../../app/(root)/cart/cart-item-row";
+import { DetailedCartItem } from "@/types/detailed-cart.type";
 
 type CartTableProps = {
-	items: CartItem[];
+	items: DetailedCartItem[];
 };
 
 export const CartTable = ({ items }: CartTableProps) => {
@@ -26,7 +27,7 @@ export const CartTable = ({ items }: CartTableProps) => {
 			<TableBody>
 				{items.map((item) => {
 					if (item.quantity > 0) {
-						return <CartItemRow item={item} key={item.id} />;
+						return <CartItemRow item={item} key={item.productId} />;
 					}
 				})}
 			</TableBody>

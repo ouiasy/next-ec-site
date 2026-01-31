@@ -1,19 +1,24 @@
+import { err, ok, Result } from "neverthrow";
 import { ULID, ulid } from "ulid";
+import { CartDomainError, ProductNotFoundError } from "./cart.domain.error";
 
 export type CartItem = {
-	readonly productId: string;
+	readonly id: ULID;
+	readonly productId: ULID;
 	readonly quantity: number;
 	readonly createdAt: Date;
 	readonly updatedAt: Date;
 };
 
 export type Cart = {
-	readonly id: string;
-	readonly userId: string;
+	readonly id: ULID;
+	readonly userId: ULID;
 	readonly items: CartItem[];
 	readonly createdAt: Date;
 	readonly updatedAt: Date;
 };
+
+
 
 export const cartDomain = {
 	createEmpty: (userID: ULID): Cart => {
@@ -33,6 +38,19 @@ export const cartDomain = {
 	 */
 	hasItem: (cart: Cart, productId: ULID): boolean => {
 		return cart.items.some((item) => item.productId === productId);
+	},
+
+	/**
+	 * カート内のある商品IDを持つ商品の数を返す
+	 * @param cart
+	 * @param productId
+	 */
+	getQty: (cart: Cart, productId: ULID): Result<number, CartDomainError> => {
+		const item = cart.items.find((item) => item.productId === productId);
+		if (item === undefined) {
+			return err(new ProductNotFoundError("カート内に該当商品がありません"))
+		}
+		return ok(item.quantity);
 	},
 
 	/**
@@ -67,6 +85,7 @@ export const cartDomain = {
 					"カートに新たに商品を追加する場合には数量は0以上の整数にしてください",
 				);
 			const newItem = {
+				id: ulid(),
 				productId: productId,
 				quantity: delta,
 				createdAt: now,
@@ -123,6 +142,7 @@ export const cartDomain = {
 
 		if (!cartDomain.hasItem(cart, productID)) {
 			const newItem: CartItem = {
+				id: ulid(),
 				productId: productID,
 				quantity: quantity,
 				createdAt: now,

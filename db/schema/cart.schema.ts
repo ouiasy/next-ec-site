@@ -8,7 +8,9 @@ export const cartTable = pgTable("carts", {
     .primaryKey(),
   userId: text().references(() => users.id, {onDelete: "cascade"}),
   createdAt: timestamp({withTimezone: true})
-    .notNull()
+    .notNull(),
+  updatedAt: timestamp({withTimezone: true})
+    .notNull(),
 }, (table) => [
   index("cart_user_id_idx").on(table.userId)
 ]);

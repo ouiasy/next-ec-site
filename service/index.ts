@@ -1,5 +1,5 @@
 import {createProductService} from "@/service/product/product.service";
-import {brandRepository, cartRepository, categoryRepository, productRepository} from "@/repository";
+import {brandRepository, cartRepository, categoryRepository, productRepository} from "@/infrastructure/repository";
 import {createCartService} from "@/service/cart/cart.service";
 
 export const productService = createProductService(

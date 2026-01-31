@@ -1,12 +1,12 @@
-import { ProductRepository } from "@/domain/product/product.domain.repository";
 import { Brand, BrandRepository } from "@/domain/brand/brand.domain";
 import {
 	Category,
 	CategoryRepository,
 } from "@/domain/category/category.domain";
 import { Product } from "@/domain/product/product.domain";
+import { ProductRepository } from "@/domain/product/product.domain.repository";
 
-type ProductDetailResult = Omit<Product, "brandId" | "categoryId"> & {
+export type ProductDetailResult = Omit<Product, "brandId" | "categoryId"> & {
 	brand: Brand | null;
 	category: Category | null;
 };
@@ -55,18 +55,20 @@ export const createProductService = (
 			.map((product) => product.categoryId) // todo : setで重複削除
 			.filter((id) => id !== null);
 		const categories = await categoryRepo.getCategoriesByIDs(categoryIDs);
+
 		const categoryMap = new Map(categories.map((c) => [c.id, c]));
 
 		const brandIDs = latestProducts
 			.map((p) => p.brandId) // todo : setで重複削除
 			.filter((id) => id !== null);
 		const brands = await brandRepo.getBrandsByIDs(brandIDs);
+
 		const brandMap = new Map(brands.map((b) => [b.id, b]));
 
 		return latestProducts.map(({ brandId, categoryId, ...rest }) => ({
 			...rest,
-			brand: brandMap.get(brandId) ?? null,
-			category: categoryMap.get(categoryId) ?? null,
+			brand: brandId ? brandMap.get(brandId) : null,
+			category: categoryId ? categoryMap.get(categoryId) : null,
 		}));
 	},
 });

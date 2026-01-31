@@ -71,3 +71,9 @@ export const paymentDomain = {
     }
   }
 }
+
+
+interface PaymentRepository = {
+  save: (payment: Payment) => Promise<void>,
+
+}

@@ -1,45 +1,56 @@
+import { ProductImage } from "@/domain/product/product.domain";
+
 export type Order = {
-  readonly id: string;
-  readonly userId: string;
-  readonly itemsSubtotal: number;
-  readonly taxTotal: number;
-  readonly shippingFee: number;
-  readonly grandTotal: number;
-  readonly orderStatus: OrderStatus;
-  readonly orderItems: OrderItems[];
-  readonly shippingAddress: Address | null;
-  readonly billingAddress: Address | null;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
-}
+	readonly id: string;
+	readonly name: string;
+	readonly email: string;
+	readonly itemsSubtotal: number;
+	readonly taxTotal: number;
+	readonly shippingFee: number;
+	readonly grandTotal: number;
+	readonly couponId: string | null;
+	readonly discount: number;
+	readonly shippingDiscount: number;
+	readonly orderStatus: OrderStatus;
+	readonly items: OrderItems[];
+	readonly shippingAddress: OrderAddress | null;
+	readonly billingAddress: OrderAddress | null;
+	readonly createdAt: Date;
+	readonly updatedAt: Date;
+};
 
 type OrderStatus = "pending" | "paid" | "completed" | "cancelled";
 
 type OrderItems = {
-  readonly id: string;
-  readonly productId: string;
-  readonly productName: string;
-  readonly priceExTax: number;
-  readonly taxRate: number;
-  readonly quantity: number;
-}
+	readonly id: string;
+	readonly productId: string;
+	readonly name: string;
+	readonly priceBeforeTax: number;
+	readonly taxRate: number;
+	readonly description: string;
+	readonly productImages: ProductImage[];
+	readonly quantity: number;
+};
 
-export type Address = {
-  readonly name: string;
-  readonly postalCode: string;
-  readonly prefecture: string;
-  readonly city: string;
-  readonly street: string;
-  readonly building: string | null;
-}
+export type OrderAddress = {
+	readonly name: string;
+	readonly postalCode: string;
+	readonly prefecture: string;
+	readonly city: string;
+	readonly street: string;
+	readonly building: string | null;
+};
 
 export type CreateOrderInput = {
-  userId: string;
-  items: Array<{
-    productId: string;
-    productName: string;
-    priceExTax: number;
-    taxRate: number;
-    quantity: number;
-  }>;
-}
+	readonly userName: string;
+	readonly email: string;
+	readonly items: Array<{
+		productId: string;
+		name: string;
+		priceBeforeTax: number;
+		taxRate: number;
+		description: string;
+		productImages: ProductImage[];
+		quantity: number;
+	}>;
+};

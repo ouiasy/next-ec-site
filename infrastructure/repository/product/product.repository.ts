@@ -1,9 +1,12 @@
-import { desc, eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
+import { err, ok, Result } from "neverthrow";
 import { ULID } from "ulid";
 import { DB } from "@/db";
 import { productImageTable, productTable } from "@/db/schema/product.schema";
 import { Product, ProductImage } from "@/domain/product/product.domain";
 import { ProductRepository } from "@/domain/product/product.domain.repository";
+import { RepositoryError } from "@/infrastructure/repository/repository.error";
+import { SelectProductTable } from "@/types/dto/response/product.actions.response";
 
 export const createProductRepository = (db: DB): ProductRepository => ({
 	getProductByID: async (productId: string): Promise<Product | null> => {
@@ -33,11 +36,22 @@ export const createProductRepository = (db: DB): ProductRepository => ({
 		};
 	},
 
-	getByIDs: async (productIDs: string[]): Promise<Product[]> => {
-		const products = await db
-			.select()
-			.from(productTable)
-			.where(inArray(productTable.id, productIDs));
+	getByIDs: async (
+		productIDs: string[],
+		options?: { forUpdate?: boolean },
+	): Promise<Product[]> => {
+		if (productIDs.length === 0) return [];
+
+		const products = options?.forUpdate
+			? await db
+					.select()
+					.from(productTable)
+					.where(inArray(productTable.id, productIDs))
+					.for("update")
+			: await db
+					.select()
+					.from(productTable)
+					.where(inArray(productTable.id, productIDs));
 
 		if (products.length === 0) return [];
 
@@ -51,7 +65,11 @@ export const createProductRepository = (db: DB): ProductRepository => ({
 
 		productImages.map((i) => {
 			const images = productImageMap.get(i.productId) ?? [];
-			images.push(i);
+			images.push({
+				displayOrd: i.displayOrder,
+				imageName: i.imageName,
+				url: i.url,
+			});
 			productImageMap.set(i.productId, images);
 		});
 
@@ -104,7 +122,7 @@ export const createProductRepository = (db: DB): ProductRepository => ({
 		const products = await db
 			.select()
 			.from(productTable)
-			.where(eq(categoryId, productTable.categoryId));
+			.where(eq(productTable.categoryId, categoryId));
 		const productImages = await db
 			.select()
 			.from(productImageTable)
@@ -158,7 +176,108 @@ export const createProductRepository = (db: DB): ProductRepository => ({
 		}));
 	},
 
-	save: async (product: Product): Promise<void> => {
-		console.log("not implemented");
+	/**
+	 * 新たにproductを登録する
+	 * @param product
+	 * @returns
+	 */
+	create: async (product: Product): Promise<Result<void, RepositoryError>> => {
+		try {
+			await db.transaction(async (tx) => {
+				await tx.insert(productTable).values({
+					id: product.id,
+					name: product.name,
+					description: product.description,
+					categoryId: product.categoryId,
+					brandId: product.brandId,
+					priceBeforeTax: product.priceBeforeTax,
+					taxRate: product.taxRate,
+					rating: product.rating,
+					numReviews: product.numReviews,
+					stock: product.stock,
+					isFeatured: product.isFeatured,
+					createdAt: product.createdAt,
+					updatedAt: product.updatedAt,
+				});
+
+				const images: InsertProductImage[] = product.productImages.map((p) => ({
+					...p,
+					productId: product.id,
+				}));
+
+				if (images.length > 0) {
+					await tx.insert(productImageTable).values(images);
+				}
+			});
+			return ok(undefined);
+		} catch (e) {
+			return err(
+				new RepositoryError("商品新規作成に失敗しました", { cause: e }),
+			);
+		}
+	},
+
+	update: async (product: Product): Promise<Result<void, RepositoryError>> => {
+		try {
+			await db.transaction(async (tx) => {
+				const originalImages: InsertProductImage[] = await tx
+					.select()
+					.from(productImageTable)
+					.where(eq(productImageTable.productId, product.id));
+
+				const originalImagesMap = new Map(originalImages.map((i) => [i.id, i]));
+
+				const images: InsertProductImage[] = product.productImages.map((p) => ({
+					...p,
+					productId: product.id,
+				}));
+
+				const upsertImages = [];
+
+				for (const i of images) {
+					upsertImages.push(i);
+					originalImagesMap.delete(i.id);
+				}
+
+				// イメージのupsert
+				if (upsertImages.length > 0) {
+					await tx
+						.insert(productImageTable)
+						.values(upsertImages)
+						.onConflictDoUpdate({
+							target: productImageTable.id,
+							set: {
+								imageName: sql`excluded.image_name`,
+								url: sql`excluded.url`,
+								displayOrd: sql`excluded.display_ord`,
+								updatedAt: sql`excluded.updated_at`,
+							}
+						});
+				}
+
+				const deletedImages: ULID[] = Array.from(originalImagesMap.keys());
+				// イメージの削除
+				if (deletedImages.length > 0) {
+					await tx
+						.delete(productImageTable)
+						.where(inArray(productImageTable.id, deletedImages));
+				}
+
+				const { productImages, priceAfterTax, ...updateProduct } = product;
+
+				await tx
+					.update(productTable)
+					.set(updateProduct)
+					.where(eq(productTable.id, product.id));
+			});
+
+			return ok(undefined);
+		} catch (e) {
+			return err(
+				new RepositoryError("商品新規作成に失敗しました", { cause: e }),
+			);
+		}
 	},
 });
+
+type InsertProductImage = typeof productImageTable.$inferInsert;

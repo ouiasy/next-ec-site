@@ -1,76 +1,29 @@
 "use server";
 
-import {db} from "@/db";
-import {desc, eq, sql} from "drizzle-orm";
-import {categoryTable, productImageTable, productTable} from "@/db/schema/product.schema";
-import {GetLatestProductsResponse, GetProductBySlugResponse} from "@/types/dto/response/product.actions.response";
+import { productService } from "@/service";
+import { ProductDetailResult } from "@/service/product/product.service";
+import { ActionResponse, err, ok } from "@/types/result";
 
-
-export const getLatestProducts = async (): Promise<GetLatestProductsResponse[]> => {
-  try {
-    return await db.select({
-      id: productTable.id,
-      name: productTable.name,
-      slug: productTable.slug,
-      description: productTable.description,
-      priceInTax: productTable.priceAfterTax,
-      brand: productTable.brand,
-      rating: productTable.rating,
-      numReviews: productTable.numReviews,
-      stock: productTable.stock,
-      imageNames: sql<string[] | null>`array_agg
-      (
-      ${productImageTable.imageName}
-      )`,
-      imageUrls: sql<string[] | null>`array_agg
-      (
-      ${productImageTable.url}
-      )`,
-    }).from(productTable)
-      .leftJoin(productImageTable, eq(productTable.id, productImageTable.productId))
-      .groupBy(productTable.id)
-      .orderBy(desc(productTable.createdAt))
-      .limit(4)
-  } catch (e) {
-    console.log("error fetching latest products: ", e)
-    return []
-  }
+export const getLatestProducts = async (): Promise<
+	ActionResponse<ProductDetailResult[]>
+> => {
+	try {
+		const products = await productService.getLatestProducts();
+		return ok(products);
+	} catch (e) {
+		console.log("最新商品の取得中にエラーが生じました: ", e);
+		return err("最新商品の取得に失敗しました");
+	}
 };
 
-
-export const getProductBySlug = async (slug: string): Promise<GetProductBySlugResponse | null> => {
-  try {
-    const [data] = await db.select({
-      id: productTable.id,
-      name: productTable.name,
-      slug: productTable.slug,
-      description: productTable.description,
-      priceInTax: productTable.priceAfterTax,
-      brand: productTable.brand,
-      rating: productTable.rating,
-      numReviews: productTable.numReviews,
-      stock: productTable.stock,
-      imageNames: sql<string[] | null>`array_agg
-      (
-      ${productImageTable.imageName}
-      )`,
-      imageUrls: sql<string[] | null>`array_agg
-      (
-      ${productImageTable.url}
-      )`,
-      category: categoryTable.name,
-    }).from(productTable)
-      .leftJoin(productImageTable, eq(productTable.id, productImageTable.productId))
-      .where(eq(productTable.slug, slug))
-      .limit(1)
-      .leftJoin(categoryTable, eq(productTable.categoryId, categoryTable.id))
-      .groupBy(productTable.id, categoryTable.name)
-
-    if (data === undefined) return null;
-
-    return data;
-  } catch (e) {
-    console.log("error fetching product by slug: ", e)
-    return null
-  }
+export const getProductDetailById = async (
+	productId: string,
+): Promise<ActionResponse<ProductDetailResult>> => {
+	try {
+		const product = await productService.getProductDetail(productId);
+		return ok(product);
+	} catch (e) {
+		console.log("商品情報の取得に失敗: ", e);
+		return err(`商品ID:${productId}が見つかりませんでした`);
+	}
 };
