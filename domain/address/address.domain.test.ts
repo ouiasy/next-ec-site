@@ -1,16 +1,17 @@
-import {describe, expect, test} from "vitest";
-import {addressDomain} from "./address.domain";
+import { describe, expect, test, vi } from "vitest";
+import { addressDomain } from "./address.domain";
 import { updateUser } from "better-auth/api";
 import { updateTag } from "next/cache";
+import { ulid } from "ulid";
 
 describe("address domain", () => {
   describe("create", () => {
     test("address オブジェクトが正しく作成されること", () => {
       const input = {
-        userId: "user_1",
+        userId: ulid(),
         lastName: "山田",
         firstName: "太郎",
-        postalCode: "123-4567",
+        postalCode: "1234567",
         prefecture: "東京都",
         city: "新宿区",
         street: "西新宿1-1-1",
@@ -18,7 +19,7 @@ describe("address domain", () => {
         isDefault: true,
       } as const;
 
-      const address = addressDomain.create(input);
+      const address = addressDomain.create(input)._unsafeUnwrap();
 
       expect(address.id).toBeDefined();
       expect(address.userId).toBe(input.userId);
@@ -37,10 +38,10 @@ describe("address domain", () => {
 
     test("building が null の場合でも正しく作成されること", () => {
       const input = {
-        userId: "user_1",
+        userId: ulid(),
         lastName: "山田",
         firstName: "太郎",
-        postalCode: "123-4567",
+        postalCode: "1234567",
         prefecture: "東京都",
         city: "新宿区",
         street: "西新宿1-1-1",
@@ -48,16 +49,32 @@ describe("address domain", () => {
         isDefault: false,
       } as const;
 
-      const address = addressDomain.create(input);
+      const address = addressDomain.create(input)._unsafeUnwrap();
 
       expect(address.building).toBeNull();
     });
-  });
 
-  describe("update", () => {
-    test("addressが正しく更新されること", () => {
+    test("userIdが不正な場合はエラー", () => {
       const input = {
-        userId: "user_1",
+        userId: "invalid-user-id",
+        lastName: "山田",
+        firstName: "太郎",
+        postalCode: "1234567",
+        prefecture: "東京都",
+        city: "新宿区",
+        street: "西新宿1-1-1",
+        building: "ビル1F",
+        isDefault: true,
+      } as const;
+
+      const address = addressDomain.create(input);
+
+      expect(address.isErr()).toBe(true);
+    });
+
+    test("postalCodeが不正な場合はエラー", () => {
+      const input = {
+        userId: ulid(),
         lastName: "山田",
         firstName: "太郎",
         postalCode: "123-4567",
@@ -68,13 +85,89 @@ describe("address domain", () => {
         isDefault: true,
       } as const;
 
+      const address = addressDomain.create(input);
+
+      expect(address.isErr()).toBe(true);
+    });
+
+    test("prefectureが不正な場合はエラー", () => {
+      const input = {
+        userId: ulid(),
+        lastName: "山田",
+        firstName: "太郎",
+        postalCode: "1234567",
+        prefecture: "東京都ん",
+        city: "新宿区",
+        street: "西新宿1-1-1",
+        building: "ビル1F",
+        isDefault: true,
+      } as const;
+
+      const address = addressDomain.create(input);
+
+      expect(address.isErr()).toBe(true);
+    });
+
+    test("cityが不正な場合はエラー", () => {
+      const input = {
+        userId: ulid(),
+        lastName: "山田",
+        firstName: "太郎",
+        postalCode: "1234567",
+        prefecture: "東京都",
+        city: "",
+        street: "西新宿1-1-1",
+        building: "ビル1F",
+        isDefault: true,
+      } as const;
+
+      const address = addressDomain.create(input);
+
+      expect(address.isErr()).toBe(true);
+    });
+
+    test("streetが不正な場合はエラー", () => {
+      const input = {
+        userId: ulid(),
+        lastName: "山田",
+        firstName: "太郎",
+        postalCode: "1234567",
+        prefecture: "東京都",
+        city: "新宿区",
+        street: "",
+        building: "ビル1F",
+        isDefault: true,
+      } as const;
+
+      const address = addressDomain.create(input);
+
+      expect(address.isErr()).toBe(true);
+    });
+  });
+
+  describe("update", () => {
+    test("addressが正しく更新されること", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-01-01"));
+      const input = {
+        userId: ulid(),
+        lastName: "山田",
+        firstName: "太郎",
+        postalCode: "1234567",
+        prefecture: "東京都",
+        city: "新宿区",
+        street: "西新宿1-1-1",
+        building: "ビル1F",
+        isDefault: true,
+      } as const;
+
       const address = addressDomain.create(input)._unsafeUnwrap();
 
+      vi.advanceTimersByTime(1000);
       const update = {
-        userId: "user_2",
         lastName: "山元",
         firstName: "二郎",
-        postalCode: "999-9999",
+        postalCode: "9999999",
         prefecture: "大阪府",
         city: "市町村",
         street: "ストリート",
@@ -82,14 +175,20 @@ describe("address domain", () => {
         isDefault: false,
       } as const;
 
-      const newAddress = addressDomain.update(address, update);
+      const newAddress = addressDomain.update(address, update)._unsafeUnwrap();
 
       expect(newAddress.id).toBe(address.id);
       expect(newAddress.userId).toBe(address.userId);
       expect(newAddress.lastName).toBe(update.lastName);
-      expect(newAddress.firstName).toBe(update.firstName)
-      expect(newAddress.postalCode).toBe()
-
-    })
-  })
+      expect(newAddress.firstName).toBe(update.firstName);
+      expect(newAddress.postalCode).toBe(update.postalCode);
+      expect(newAddress.prefecture).toBe(update.prefecture);
+      expect(newAddress.city).toBe(update.city);
+      expect(newAddress.street).toBe(update.street);
+      expect(newAddress.building).toBe(update.building);
+      expect(newAddress.isDefault).toBe(update.isDefault);
+      expect(newAddress.createdAt).toBe(address.createdAt);
+      expect(newAddress.updatedAt.getTime()).toBeGreaterThan(address.updatedAt.getTime());
+    });
+  });
 });

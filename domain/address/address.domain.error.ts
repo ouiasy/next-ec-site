@@ -3,7 +3,8 @@ import { OptionIcon } from "lucide-react";
 export type AddressDomainError =
 	| InvalidUserIdError
 	| InvalidPostalCodeError
-	| EmptyFieldError;
+	| EmptyFieldError
+	| InvalidPrefectureError;
 
 export class InvalidUserIdError extends Error {
 	public override readonly name = "InvalidUserIdError";
@@ -23,6 +24,14 @@ export class InvalidPostalCodeError extends Error {
 
 export class EmptyFieldError extends Error {
 	public override readonly name = "EmptyFieldError";
+
+	constructor(message: string, options?: ErrorOptions) {
+		super(message, options);
+	}
+}
+
+export class InvalidPrefectureError extends Error {
+	public override readonly name = "InvalidPrefectureError";
 
 	constructor(message: string, options?: ErrorOptions) {
 		super(message, options);
