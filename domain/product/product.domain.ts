@@ -30,12 +30,12 @@ export type Product = {
 };
 
 export type ProductImage = {
-	id: ULID;
-	url: string;
-	imageName: string | null;
-	displayOrd: number;
-	createdAt: Date;
-	updatedAt: Date;
+	readonly id: ULID;
+	readonly url: string;
+	readonly imageName: string | null;
+	readonly displayOrd: number;
+	readonly createdAt: Date;
+	readonly updatedAt: Date;
 };
 
 export type CreateProductInput = Omit<

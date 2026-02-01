@@ -6,12 +6,13 @@ export type Brand = {
 	readonly id: string;
 	readonly name: string;
 	readonly description: string | null;
+
+	readonly createdAt: Date;
+	readonly updatedAt: Date;
 };
 
-export type UpdateBrandInput = {
-	name?: string;
-	description?: string;
-};
+export type CreateBrandInput = Omit<Brand, "id" | "updatedAt" | "createdAt">;
+export type UpdateBrandInput = Omit<Brand, "id" | "updatedAt" | "createdAt">;
 
 export const brandDomain = {
 	/**
@@ -20,15 +21,24 @@ export const brandDomain = {
 	 * @param description 詳細説明
 	 * @returns ブランド情報
 	 */
-	create: (name: string, description?: string): Result<Brand, BrandDomainError> => {
-		const trimmedName = name.trim();
+	create: (input: CreateBrandInput): Result<Brand, BrandDomainError> => {
+		const trimmedName = input.name.trim();
 		if (trimmedName.length === 0) {
 			return err(new EmptyValueError("ブランド名は1文字以上にしてください"));
 		}
+
+		const trimmedDescription = input.description?.trim();
+		if (trimmedDescription !== undefined && trimmedDescription.length === 0) {
+			return err(new EmptyValueError("ブランド説明は1文字以上にしてください"));
+		}
+
+		const now = new Date();
 		return ok({
 			id: ulid(),
 			name: trimmedName,
-			description: description?.trim() ?? null,
+			description: trimmedDescription ?? null,
+			createdAt: now,
+			updatedAt: now,
 		});
 	},
 
@@ -39,17 +49,23 @@ export const brandDomain = {
 	 * @returns ブランド情報
 	 */
 	update: (brand: Brand, update: UpdateBrandInput): Result<Brand, BrandDomainError> => {
-		if (update.name) {
-			const trimmedName = update.name.trim();
-			if (trimmedName.length === 0) {
-				return err(new EmptyValueError("ブランド名は1文字以上にしてください"));
-			}
+		const trimmedName = update.name.trim();
+		if (trimmedName.length === 0) {
+			return err(new EmptyValueError("ブランド名は1文字以上にしてください"));
 		}
+
+		const trimmedDescription = update.description?.trim();
+		if (trimmedDescription !== undefined && trimmedDescription.length === 0) {
+			return err(new EmptyValueError("ブランド説明は1文字以上にしてください"));
+		}
+
+		const now = new Date();
 
 		return ok({
 			...brand,
-			name: update.name?.trim() ?? brand.name,
-			description: update.description?.trim() ?? brand.description,
+			name: trimmedName,
+			description: trimmedDescription ?? null,
+			updatedAt: now,
 		});
 	},
 };

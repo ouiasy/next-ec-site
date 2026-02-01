@@ -51,10 +51,16 @@ export const categoryTable = pgTable("categories", {
 	parentId: text() // rootはnull
 		.references((): AnyPgColumn => categoryTable.id, { onDelete: "cascade" }),
 	description: text(),
+
+	createdAt: timestamp({ withTimezone: true }).notNull(),
+	updatedAt: timestamp({ withTimezone: true }).notNull(),
 });
 
 export const brandTable = pgTable("brands", {
 	id: text().primaryKey(),
 	name: text().notNull().unique(),
 	description: text(),
+
+	createdAt: timestamp({ withTimezone: true }).notNull(),
+	updatedAt: timestamp({ withTimezone: true }).notNull(),
 });
