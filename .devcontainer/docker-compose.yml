@@ -8,6 +8,8 @@ services:
     stdin_open: true
     depends_on:
       - db
+    volumes:
+      - app-volume-for-ecsite:/home/node/next-ec-site
 
   db:
     image: my-postgres:v1
@@ -39,3 +41,4 @@ services:
 volumes:
   postgres-for-ecsite:
   postgres-for-ecsite-test:
+  app-volume-for-ecsite:
