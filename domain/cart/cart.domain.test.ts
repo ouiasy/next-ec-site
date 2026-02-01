@@ -10,21 +10,17 @@ import {
 	vi,
 } from "vitest";
 import { Cart, cartDomain } from "@/domain/cart/cart.domain";
+import { ExperienceContextShippingPreference } from "@paypal/paypal-server-sdk";
 
-type CartDomainTestContext = {
-	cart: Cart;
-	userID: ULID;
-	defaultTime: Date;
-} & TestContext;
+
 
 describe("cart domain", () => {
-	beforeEach<CartDomainTestContext>((context) => {
-		vi.useFakeTimers();
+	const defaultTime = new Date("2026-01-01T10:00:00Z");
+	const userID = ulid();
 
-		context.userID = ulid();
-		context.defaultTime = new Date("2026-01-01T10:00:00Z");
-		vi.setSystemTime(context.defaultTime);
-		context.cart = cartDomain.createEmpty(context.userID);
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(defaultTime);
 	});
 
 	afterEach(() => {
@@ -32,73 +28,93 @@ describe("cart domain", () => {
 	});
 
 	describe("createEmpty", () => {
-		test<CartDomainTestContext>("check empty cart is created correctly", ({
-			cart,
-			userID,
-		}) => {
-			expect(cart);
+		test("check empty cart is created correctly", () => {
+			
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			expect(isValid(cart.userId)).toBe(true);
 			expect(cart.userId).toBe(userID);
 			expect(isValid(cart.id)).toBe(true);
 			expect(cart.items).toEqual([]);
-			expect(cart.createdAt).toBeInstanceOf(Date);
-			expect(cart.updatedAt).toBeInstanceOf(Date);
+			expect(cart.createdAt).toEqual(defaultTime);
+			expect(cart.updatedAt).toEqual(defaultTime);
 		});
 	});
 
-	describe("deleteItem", () => {
-		test<CartDomainTestContext>("check the product is correctly removed from cart", ({
-			cart,
-			defaultTime,
-		}) => {
+	describe("getQty", () => {
+		test("check the product quantity is correctly retrieved from cart", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID = ulid();
-			const defaultCart = cartDomain.changeQuantityBy(cart, productID, 2);
-			vi.setSystemTime(new Date("2026-01-01T10:10:00Z"));
+			const defaultCart = cartDomain.changeQuantityBy(cart, productID, 2)._unsafeUnwrap();
+			expect(cartDomain.getQty(defaultCart, productID)._unsafeUnwrap()).toBe(2);
+		});
+
+		test("check the product quantity is 0 when product is not in cart", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
+			const productID = ulid();
+			expect(cartDomain.getQty(cart, productID).isErr()).toBe(true);
+		});
+	})
+
+	describe("deleteItem", () => {
+		test("check the product is correctly removed from cart", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
+			const productID = ulid();
+			const defaultCart = cartDomain.changeQuantityBy(cart, productID, 2)._unsafeUnwrap();
+			vi.advanceTimersByTime(1000);
 			const deletedCart = cartDomain.deleteItem(defaultCart, productID);
 			expect(deletedCart.items).toHaveLength(0);
-			expect(deletedCart.updatedAt).toEqual(new Date("2026-01-01T10:10:00Z"));
+			expect(deletedCart.updatedAt).greaterThan(defaultTime);
 			expect(deletedCart.createdAt).toEqual(defaultTime);
 		});
 	});
 
 	describe("changeQuantityBy", () => {
-		test<CartDomainTestContext>("newly add an item to cart", ({ cart }) => {
+		test("newly add an item to cart", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID1 = ulid();
 			const productID2 = ulid();
 			const quantity = 2;
 
+			vi.advanceTimersByTime(1000);
+
 			const updatedCart = cartDomain.changeQuantityBy(
-				cartDomain.changeQuantityBy(cart, productID1, quantity),
+				cartDomain.changeQuantityBy(cart, productID1, quantity)._unsafeUnwrap(),
 				productID2,
 				quantity,
-			);
+			)._unsafeUnwrap();
 
 			expect(updatedCart.items).toHaveLength(2);
+			expect(updatedCart.createdAt).toEqual(defaultTime);
+			expect(updatedCart.updatedAt).greaterThan(defaultTime);
+
 			expect(updatedCart.items[0].productId).toBe(productID1);
 			expect(updatedCart.items[0].quantity).toBe(quantity);
+			expect(updatedCart.items[0].createdAt).greaterThan(defaultTime);
+			expect(updatedCart.items[0].updatedAt).greaterThan(defaultTime);
+
 			expect(updatedCart.items[1].productId).toBe(productID2);
 			expect(updatedCart.items[1].quantity).toBe(quantity);
+			expect(updatedCart.items[1].createdAt).greaterThan(defaultTime);
+			expect(updatedCart.items[1].updatedAt).greaterThan(defaultTime);
 		});
 
-		test<CartDomainTestContext>("updates quantity and updatedAt when product already exists", ({
-			cart,
-			defaultTime,
-		}) => {
+		test("updates quantity and updatedAt when product already exists", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID = ulid();
 
-			const defaultCart = cartDomain.changeQuantityBy(cart, productID, 2);
+			const cartWithItem = cartDomain.changeQuantityBy(cart, productID, 2)._unsafeUnwrap();
 
-			expect(defaultCart.items).toHaveLength(1);
-			expect(defaultCart.items[0].quantity).toBe(2);
-			const defaultUpdatedAt = defaultCart.updatedAt;
+			expect(cartWithItem.items).toHaveLength(1);
+			expect(cartWithItem.items[0].quantity).toBe(2);
+			const defaultUpdatedAt = cartWithItem.updatedAt;
 
 			vi.setSystemTime(addMinute(defaultTime, 1));
 
 			const updatedCart = cartDomain.changeQuantityBy(
-				defaultCart,
+				cartWithItem,
 				productID,
 				2,
-			);
+			)._unsafeUnwrap();
 			const updatedUpdatedAt = updatedCart.updatedAt;
 
 			expect(updatedCart.items).toHaveLength(1);
@@ -107,68 +123,64 @@ describe("cart domain", () => {
 			expect(defaultUpdatedAt).lt(updatedUpdatedAt);
 		});
 
-		test<CartDomainTestContext>("throws an error when quantity change is 0", ({
-			cart,
-		}) => {
+		test("throws an error when quantity change is 0", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID = ulid();
 
-			expect(() => cartDomain.changeQuantityBy(cart, productID, 0)).toThrow(
-				"0以外の整数値を入力してください",
-			);
+			const res = cartDomain.changeQuantityBy(cart, productID, 0);
+
+			expect(res.isErr()).toBe(true);
 		});
 
-		test<CartDomainTestContext>("throws an error when newly-added product's quantity is less than 0", ({
-			cart,
-		}) => {
+		test("throws an error when newly-added product's quantity is less than 0", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID = ulid();
-			expect(() => cartDomain.changeQuantityBy(cart, productID, -1)).toThrow(
-				"カートに新たに商品を追加する場合には数量は0以上の整数にしてください",
-			);
+			const res = cartDomain.changeQuantityBy(cart, productID, -1);
+			expect(res.isErr()).toBe(true);
 		});
 
-		test<CartDomainTestContext>("removes the item when quantity reaches 0", ({
-			cart,
-		}) => {
+		test("removes the item when quantity reaches 0", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID = ulid();
-			const defaultCart = cartDomain.changeQuantityBy(cart, productID, 2);
+			const updatedCart = cartDomain.changeQuantityBy(cart, productID, 2)._unsafeUnwrap();
 
-			expect(defaultCart.items).toHaveLength(1);
+			expect(updatedCart.items).toHaveLength(1);
 
-			const updatedCart = cartDomain.changeQuantityBy(
-				defaultCart,
+			const deletedCart = cartDomain.changeQuantityBy(
+				updatedCart,
 				productID,
 				-2,
-			);
-			expect(updatedCart.items).toHaveLength(0);
+			)._unsafeUnwrap();
+			expect(deletedCart.items).toHaveLength(0);
 		});
 	});
 
 	describe("setQuantity", () => {
-		test<CartDomainTestContext>("set quantity for a new product", ({
-			cart,
-			defaultTime,
-		}) => {
+		test("set quantity for a new product", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID = ulid();
-			const defaultCart = cartDomain.setQuantity(cart, productID, 2);
+
+			vi.advanceTimersByTime(1000);
+			const defaultCart = cartDomain.setQuantity(cart, productID, 2)._unsafeUnwrap();
 
 			expect(defaultCart.items).toHaveLength(1);
+			expect(defaultCart.createdAt).toEqual(defaultTime);
+			expect(defaultCart.updatedAt).gt(defaultTime);
 			expect(defaultCart.items[0].quantity).toBe(2);
 			expect(defaultCart.items[0].productId).toBe(productID);
-			expect(defaultCart.items[0].createdAt).toEqual(defaultTime);
-			expect(defaultCart.items[0].updatedAt).toEqual(defaultTime);
+			expect(defaultCart.items[0].createdAt).gt(defaultTime);
+			expect(defaultCart.items[0].updatedAt).gt(defaultTime);
 		});
 
-		test<CartDomainTestContext>("change quantity when existing product", ({
-			cart,
-			defaultTime,
-		}) => {
+		test("change quantity when product already exists", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID = ulid();
-			const defaultCart = cartDomain.setQuantity(cart, productID, 2);
+			const defaultCart = cartDomain.setQuantity(cart, productID, 2)._unsafeUnwrap();
 
 			const updatedTime = addMinute(defaultTime, 10);
 			vi.setSystemTime(updatedTime);
 
-			const changedCart = cartDomain.setQuantity(defaultCart, productID, 4);
+			const changedCart = cartDomain.setQuantity(defaultCart, productID, 4)._unsafeUnwrap();
 
 			expect(changedCart.items).toHaveLength(1);
 			expect(changedCart.items[0].quantity).toBe(4);
@@ -176,36 +188,31 @@ describe("cart domain", () => {
 			expect(changedCart.items[0].updatedAt).toEqual(updatedTime);
 		});
 
-		test<CartDomainTestContext>("delete cart item when qty is set 0", ({
-			cart,
-		}) => {
+		test("delete cart item when qty is set 0", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID = ulid();
-			const defaultCart = cartDomain.setQuantity(cart, productID, 2);
-			const changedCart = cartDomain.setQuantity(defaultCart, productID, 0);
+			const defaultCart = cartDomain.setQuantity(cart, productID, 2)._unsafeUnwrap();
+			const changedCart = cartDomain.setQuantity(defaultCart, productID, 0)._unsafeUnwrap();
 
 			expect(changedCart.items).toHaveLength(0);
 		});
 
-		test<CartDomainTestContext>("throws an error when quantity is less than 0", ({
-			cart,
-		}) => {
+		test("throws an error when quantity is less than 0", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID = ulid();
-			expect(() => cartDomain.setQuantity(cart, productID, -2)).toThrowError(
-				"数量は0より大きくしてください",
-			);
+			const res = cartDomain.setQuantity(cart, productID, -2);
+			expect(res.isErr()).toBe(true);
 		});
 	});
 
 	describe("mergeCartItem", () => {
-		test<CartDomainTestContext>("merge different items", ({
-			cart,
-			defaultTime,
-		}) => {
+		test("merge different items", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID_1 = ulid();
-			const cart1 = cartDomain.setQuantity(cart, productID_1, 1);
+			const cart1 = cartDomain.setQuantity(cart, productID_1, 1)._unsafeUnwrap();
 
 			const productID_2 = ulid();
-			const cart2 = cartDomain.setQuantity(cart, productID_2, 2);
+			const cart2 = cartDomain.setQuantity(cart, productID_2, 2)._unsafeUnwrap();
 
 			const updatedTime = addMinute(defaultTime, 2);
 			vi.setSystemTime(updatedTime);
@@ -223,12 +230,11 @@ describe("cart domain", () => {
 			expect(merged.updatedAt).toEqual(updatedTime);
 		});
 
-		test<CartDomainTestContext>("merge same items - take max quantity", ({
-			cart,
-		}) => {
+		test("merge same items - take max quantity", () => {
+			const cart = cartDomain.createEmpty(userID)._unsafeUnwrap();
 			const productID_1 = ulid();
-			const cart1 = cartDomain.setQuantity(cart, productID_1, 5);
-			const cart2 = cartDomain.setQuantity(cart, productID_1, 2);
+			const cart1 = cartDomain.setQuantity(cart, productID_1, 5)._unsafeUnwrap();
+			const cart2 = cartDomain.setQuantity(cart, productID_1, 2)._unsafeUnwrap();
 
 			const merged = cartDomain.mergeCartItem(cart1, cart2);
 

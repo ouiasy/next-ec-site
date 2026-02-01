@@ -1,6 +1,6 @@
 import { err, ok, Result } from "neverthrow";
-import { ULID, ulid } from "ulid";
-import { CartDomainError, ProductNotFoundError } from "./cart.domain.error";
+import { isValid, ULID, ulid } from "ulid";
+import { CartDomainError, InvalidIdError, InvalidQuantityError, ProductNotFoundError } from "./cart.domain.error";
 
 export type CartItem = {
 	readonly id: ULID;
@@ -19,16 +19,18 @@ export type Cart = {
 };
 
 
-
 export const cartDomain = {
-	createEmpty: (userID: ULID): Cart => {
-		return {
+	createEmpty: (userID: ULID): Result<Cart, CartDomainError> => {
+		if (!isValid(userID)) {
+			return err(new InvalidIdError("不正なユーザーIDです"));
+		}
+		return ok({
 			id: ulid(),
 			userId: userID,
 			items: [],
 			createdAt: new Date(),
 			updatedAt: new Date(),
-		};
+		});
 	},
 
 	/**
@@ -74,16 +76,17 @@ export const cartDomain = {
 	 * @param delta 追加する商品数(マイナス値も可)
 	 * @returns Cart 商品追加後のカート
 	 */
-	changeQuantityBy: (cart: Cart, productId: ULID, delta: number = 1): Cart => {
-		if (delta === 0) throw new Error("0以外の整数値を入力してください");
+	changeQuantityBy: (cart: Cart, productId: ULID, delta: number = 1): Result<Cart, CartDomainError> => {
+		if (delta === 0) {
+			return err(new InvalidQuantityError("0以外の整数値を入力してください"));
+		}
 		const now = new Date();
 
 		const exists = cartDomain.hasItem(cart, productId);
 		if (!exists) {
-			if (delta < 0)
-				throw new Error(
-					"カートに新たに商品を追加する場合には数量は0以上の整数にしてください",
-				);
+			if (delta < 0) {
+				return err(new InvalidQuantityError("カートに新たに商品を追加する場合には数量は0以上の整数にしてください"));
+			}
 			const newItem = {
 				id: ulid(),
 				productId: productId,
@@ -91,11 +94,11 @@ export const cartDomain = {
 				createdAt: now,
 				updatedAt: now,
 			};
-			return {
+			return ok({
 				...cart,
 				items: [...cart.items, newItem],
 				updatedAt: now,
-			};
+			});
 		}
 
 		const newItems: CartItem[] = [];
@@ -106,24 +109,27 @@ export const cartDomain = {
 				continue;
 			}
 
-			const qty = item.quantity + delta > 0 ? item.quantity + delta : 0;
-			if (qty !== 0) {
+			const newQty = item.quantity + delta;
+			if (newQty < 0) {
+				return err(new InvalidQuantityError("数量が0を下回ります"));
+			}
+			if (newQty !== 0) {
 				const newItem = {
 					...item,
-					quantity: qty,
+					quantity: newQty,
 					updatedAt: now,
 				};
 				newItems.push(newItem);
 			}
 		}
 
-		return {
+		return ok({
 			id: cart.id,
 			userId: cart.userId,
 			items: newItems,
 			createdAt: cart.createdAt,
 			updatedAt: now,
-		};
+		});
 	},
 
 	/**
@@ -133,10 +139,12 @@ export const cartDomain = {
 	 * @param productID
 	 * @param quantity
 	 */
-	setQuantity: (cart: Cart, productID: ULID, quantity: number): Cart => {
-		if (quantity < 0) throw new Error("数量は0より大きくしてください");
+	setQuantity: (cart: Cart, productID: ULID, quantity: number): Result<Cart, CartDomainError> => {
+		if (quantity < 0) {
+			return err(new InvalidQuantityError("数量は0より大きくしてください"));
+		}
 		if (quantity === 0) {
-			return cartDomain.deleteItem(cart, productID);
+			return ok(cartDomain.deleteItem(cart, productID));
 		}
 		const now = new Date();
 
@@ -148,11 +156,11 @@ export const cartDomain = {
 				createdAt: now,
 				updatedAt: now,
 			};
-			return {
+			return ok({
 				...cart,
 				items: [...cart.items, newItem],
 				updatedAt: now,
-			};
+			});
 		}
 
 		const newItems = cart.items.map((item) =>
@@ -165,11 +173,11 @@ export const cartDomain = {
 				: item,
 		);
 
-		return {
+		return ok({
 			...cart,
 			items: newItems,
 			updatedAt: now,
-		};
+		});
 	},
 
 	/**
