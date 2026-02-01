@@ -7,7 +7,7 @@ describe("categoryDomain", () => {
     test("有効な名前と説明でカテゴリを作成できる", () => {
       const name = "カテゴリ名";
       const description = "カテゴリの説明";
-      const category = categoryDomain.create(name, description);
+      const category = categoryDomain.create(name, description, null)._unsafeUnwrap();
 
       expect(category.id).toBeDefined();
       expect(category.name).toBe(name);
@@ -19,33 +19,38 @@ describe("categoryDomain", () => {
       const name = "カテゴリ名";
       const description = "カテゴリの説明";
       const parentId = ulid();
-      const category = categoryDomain.create(name, description, parentId);
+      const category = categoryDomain.create(name, description, parentId)._unsafeUnwrap();
 
       expect(category.parentId).toBe(parentId);
     });
 
     test("名前が空（または空白のみ）の場合はエラーを投げる", () => {
-      expect(() => categoryDomain.create("", "説明")).toThrow("カテゴリ名は1文字以上にしてください");
-      expect(() => categoryDomain.create("   ", "説明")).toThrow("カテゴリ名は1文字以上にしてください");
+      const cat1 = categoryDomain.create("", "説明", null);
+      const cat2 = categoryDomain.create("   ", "説明", null);
+      expect(cat1.isErr()).toBe(true);
+      expect(cat2.isErr()).toBe(true);
     });
 
-    test("説明が空（または空白のみ）の場合はエラーを投げる", () => {
-      expect(() => categoryDomain.create("名前", "")).toThrow("カテゴリの説明は1文字以上にしてください");
-      expect(() => categoryDomain.create("名前", "   ")).toThrow("カテゴリの説明は1文字以上にしてください");
+    test("説明が空（または空白のみ）でも許容する", () => {
+      const cat1 = categoryDomain.create("名前", "", null);
+      const cat2 = categoryDomain.create("名前", "   ", null);
+      expect(cat1.isErr()).toBe(false);
+      expect(cat2.isErr()).toBe(false);
     });
 
     test("不正な形式の親カテゴリIDの場合はエラーを投げる", () => {
-      expect(() => categoryDomain.create("名前", "説明", "invalid-id")).toThrow("不正な親カテゴリです");
+      const cat1 = categoryDomain.create("名前", "説明", "invalid-id");
+      expect(cat1.isErr()).toBe(true);
     });
 
     test("名前と説明の前後から空白が削除される", () => {
-      const category = categoryDomain.create("  Category  ", "  Description  ");
-      expect(category.name).toBe("Category");
-      expect(category.description).toBe("Description");
+      const cat1 = categoryDomain.create("  Category  ", "  Description  ", null)._unsafeUnwrap();
+      expect(cat1.name).toBe("Category");
+      expect(cat1.description).toBe("Description");
     });
   });
 
-  describe("changeName", () => {
+  describe("update", () => {
     const initialCategory: Category = {
       id: ulid(),
       name: "Old Name",
@@ -53,67 +58,37 @@ describe("categoryDomain", () => {
       parentId: null
     };
 
-    test("カテゴリ名を変更できる", () => {
-      const updatedCategory = categoryDomain.changeName(initialCategory, "New Name");
-      expect(updatedCategory.name).toBe("New Name");
+    test("カテゴリを更新できる", () => {
+      const updateData = categoryDomain.create("New Name", "New Description", ulid())._unsafeUnwrap();
+      updateData.id = initialCategory.id;
+      const updatedCategory = categoryDomain.update(initialCategory, updateData)._unsafeUnwrap();
+      expect(updatedCategory.name).toBe(updateData.name);
+      expect(updatedCategory.description).toBe(updateData.description);
       expect(updatedCategory.id).toBe(initialCategory.id);
-      expect(updatedCategory.description).toBe(initialCategory.description);
     });
+
+    test("カテゴリidがマッチしない場合にはエラーを返す", () => {
+      const updateData = categoryDomain.create("New Name", "New Description", ulid())._unsafeUnwrap();
+      const updatedCategory = categoryDomain.update(initialCategory, updateData);
+      expect(updatedCategory.isErr()).toBe(true);
+    })
 
     test("新しい名前が空（または空白のみ）の場合はエラーを投げる", () => {
-      expect(() => categoryDomain.changeName(initialCategory, "")).toThrow("カテゴリ名は１文字以上にしてください");
-      expect(() => categoryDomain.changeName(initialCategory, "  ")).toThrow("カテゴリ名は１文字以上にしてください");
+      const updateData = categoryDomain.create("  ", "New Description", ulid());
+      expect(updateData.isErr()).toBe(true);
     });
 
-    test("新しい名前の前後から空白が削除される", () => {
-      const updatedCategory = categoryDomain.changeName(initialCategory, "  New Name  ");
-      expect(updatedCategory.name).toBe("New Name");
-    });
-  });
-
-  describe("changeDescription", () => {
-    const initialCategory: Category = {
-      id: ulid(),
-      name: "Name",
-      description: "Old Description",
-      parentId: null
-    };
-
-    test("説明を変更できる", () => {
-      const updatedCategory = categoryDomain.changeDescription(initialCategory, "New Description");
-      expect(updatedCategory.description).toBe("New Description");
-      expect(updatedCategory.id).toBe(initialCategory.id);
-      expect(updatedCategory.name).toBe(initialCategory.name);
+    test("新しい説明が空（または空白のみ）でも許容する", () => {
+      const updateData = categoryDomain.create("New Name", "  ", ulid());
+      expect(updateData.isErr()).toBe(false);
     });
 
-    test("新しい説明が空（または空白のみ）の場合はエラーを投げる", () => {
-      expect(() => categoryDomain.changeDescription(initialCategory, "")).toThrow("カテゴリの説明は1文字以上にしてください");
-      expect(() => categoryDomain.changeDescription(initialCategory, "  ")).toThrow("カテゴリの説明は1文字以上にしてください");
-    });
 
-    test("新しい説明の前後から空白が削除される", () => {
-      const updatedCategory = categoryDomain.changeDescription(initialCategory, "  New Description  ");
-      expect(updatedCategory.description).toBe("New Description");
+    test("新しい親カテゴリIDが不正な形式の場合はエラーを投げる", () => {
+      const updateData = categoryDomain.create("New Name", "New Description", "invalid-id");
+      expect(updateData.isErr()).toBe(true);
     });
   });
 
-  describe("changeParentCategory", () => {
-    const initialCategory: Category = {
-      id: ulid(),
-      name: "Name",
-      description: "Description",
-      parentId: null
-    };
 
-    test("親カテゴリを変更できる", () => {
-      const newParentId = ulid();
-      const updatedCategory = categoryDomain.changeParentCategory(initialCategory, newParentId);
-      expect(updatedCategory.parentId).toBe(newParentId);
-      expect(updatedCategory.id).toBe(initialCategory.id);
-    });
-
-    test("不正な形式の親カテゴリIDの場合はエラーを投げる", () => {
-      expect(() => categoryDomain.changeParentCategory(initialCategory, "invalid-id")).toThrow("不正な親カテゴリーです");
-    });
-  });
 });

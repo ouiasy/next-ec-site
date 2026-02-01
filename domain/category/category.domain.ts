@@ -1,4 +1,6 @@
+import { Result, err, ok } from "neverthrow";
 import { isValid, ulid } from "ulid";
+import { CategoryDomainError, CategoryIdMismatchError, EmptyValueError, InvalidParentIdError } from "./category.domain.errors";
 
 export type Category = {
 	id: string;
@@ -8,57 +10,46 @@ export type Category = {
 };
 
 export const categoryDomain = {
-	create: (name: string, description: string, parentId?: string): Category => {
+	create: (name: string, description: string | null, parentId: string | null): Result<Category, CategoryDomainError> => {
 		const trimmedName = name.trim();
 		if (trimmedName.length === 0) {
-			throw new Error("カテゴリ名は1文字以上にしてください");
+			return err(new EmptyValueError("名前は1文字以上にしてください"));
 		}
-		const trimmedDescription = description.trim();
-		if (trimmedDescription.length === 0) {
-			throw new Error("カテゴリの説明は1文字以上にしてください");
+		const trimmedDescription = description?.trim();
+		if (trimmedDescription && trimmedDescription.length === 0) {
+			return err(new EmptyValueError("説明は1文字以上にしてください"));
 		}
 		if (parentId && !isValid(parentId)) {
-			throw new Error("不正な親カテゴリです");
+			return err(new InvalidParentIdError("不正な親カテゴリです"));
 		}
-		return {
+		return ok({
 			id: ulid(),
 			name: trimmedName,
-			description: trimmedDescription,
-			parentId: parentId ? parentId : null,
-		};
+			description: trimmedDescription ?? null,
+			parentId: parentId ?? null,
+		});
 	},
 
-	changeName: (category: Category, name: string): Category => {
-		const trimmedName = name.trim();
+	update: (original: Category, update: Category): Result<Category, CategoryDomainError> => {
+		if (original.id !== update.id) {
+			return err(new CategoryIdMismatchError("更新対象のカテゴリIDが一致しません"));
+		}
+		const trimmedName = update.name.trim();
 		if (trimmedName.length === 0) {
-			throw new Error("カテゴリ名は１文字以上にしてください");
+			return err(new EmptyValueError("名前は1文字以上にしてください"));
 		}
-		return {
-			...category,
+		const trimmedDescription = update.description?.trim();
+
+		if (update.parentId && !isValid(update.parentId)) {
+			return err(new InvalidParentIdError("不正な親カテゴリです"));
+		}
+		return ok({
+			...original,
 			name: trimmedName,
-		};
-	},
-
-	changeDescription: (category: Category, description: string): Category => {
-		const trimmedDescription = description.trim();
-		if (trimmedDescription.length === 0) {
-			throw new Error("カテゴリの説明は1文字以上にしてください");
-		}
-		return {
-			...category,
-			description: trimmedDescription,
-		};
-	},
-
-	changeParentCategory: (category: Category, parentId: string): Category => {
-		if (!isValid(parentId)) {
-			throw new Error("不正な親カテゴリーです");
-		}
-		return {
-			...category,
-			parentId,
-		};
-	},
+			description: trimmedDescription ?? null,
+			parentId: update.parentId ?? null,
+		});
+	}
 };
 
 export interface CategoryRepository {
