@@ -120,6 +120,13 @@
       "when": 1769756458176,
       "tag": "0016_spicy_carmella_unuscione",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1769920476506,
+      "tag": "0017_chilly_major_mapleleaf",
+      "breakpoints": true
     }
   ]
 }
