@@ -1,6 +1,6 @@
 import { Result } from "neverthrow";
 import { Cart } from "@/domain/cart/cart.domain";
-import { RepositoryError } from "@/infrastructure/repository/repository.error";
+import { RepositoryError } from "@/domain/repository.error";
 
 export interface CartRepository {
 	getCartByUserID: (

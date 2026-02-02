@@ -1,7 +1,7 @@
 import { Result } from "neverthrow";
 import { ULID } from "ulid";
 import { Product } from "@/domain/product/product.domain";
-import { RepositoryError } from "../../infrastructure/repository/repository.error";
+import { RepositoryError } from "../repository.error";
 
 export interface ProductRepository {
 	getProductByID: (

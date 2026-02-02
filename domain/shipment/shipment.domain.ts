@@ -1,8 +1,13 @@
-import {ulid} from "ulid";
+import {isValid, ULID, ulid} from "ulid";
+import { InvalidIdError, InvalidShipmentStatusError, InvalidValueError, ShipmentDomainError } from "./shipment.domain.errors";
+import { Result, err, ok } from "neverthrow";
+import { RepositoryError } from "@/domain/repository.error";
+import { Update } from "vite";
 
 export type Shipment = {
-  readonly id: string;
-  readonly orderId: string;
+  readonly id: ULID;
+  readonly userId: ULID;
+  readonly orderId: ULID;
   readonly trackingId: string | null;
   readonly carrier: string | null;
 
@@ -13,7 +18,8 @@ export type Shipment = {
   readonly updatedAt: Date;
 }
 
-export type ShipmentStatus = "preparing" | "shipped" | "in_transit" | "delivered" | "returned" | "lost";
+export const SHIPMENT_STATUS = ["preparing", "shipped", "in_transit", "delivered", "returned", "lost"];
+export type ShipmentStatus = typeof SHIPMENT_STATUS[number];
 
 const VALID_SHIPMENT_TRANSITIONS: Record<ShipmentStatus, ShipmentStatus[]> = {
   preparing: ["shipped", "lost"],
@@ -25,22 +31,74 @@ const VALID_SHIPMENT_TRANSITIONS: Record<ShipmentStatus, ShipmentStatus[]> = {
 }
 
 type CreateShipmentInput = Pick<Shipment,
-  "orderId"
+  "orderId" | "userId" 
+>
+
+type UpdateShipmentInput = Pick<Shipment,
+  "trackingId" | "carrier" | "status"
 >
 
 export const shipmentDomain = {
-  create:　(input: CreateShipmentInput): Shipment => {
+  /**
+   * 配送エンティティを生成する
+   * @param input 
+   * @returns 
+   */
+  create: (input: CreateShipmentInput): Result<Shipment, ShipmentDomainError> => {
+    if(!isValid(input.userId)) {
+      return err(new InvalidIdError("無効なユーザーIDです"))
+    }
+    if (!isValid(input.orderId)) {
+      return err(new InvalidIdError("無効なオーダーIDです"))
+    }
     const now = new Date()
-    return {
+    return ok({
       id: ulid(),
+      userId: input.userId,
       orderId: input.orderId,
       trackingId: null,
       carrier: null,
       status: "preparing",
-
       shippedAt: null,
       createdAt: now,
       updatedAt: now,
+    })
+  },
+
+  /**
+   * 配送エンティティの状態を更新する
+   * @param shipment 
+   * @param status 
+   * @returns 
+   */
+  updateStatus: (shipment: Shipment, update: UpdateShipmentInput): Result<Shipment, ShipmentDomainError> => {
+    const trimmedCarrier = update.carrier?.trim()
+    if (trimmedCarrier !== undefined && trimmedCarrier.length === 0) {
+      return err(new InvalidValueError("無効なキャリア名です"))
     }
-  }
+    const trimmedTrackingId = update.trackingId?.trim()
+    if (trimmedTrackingId !== undefined && trimmedTrackingId.length === 0) {
+      return err(new InvalidValueError("無効なトラッキングIDです"))
+    }
+    if (!VALID_SHIPMENT_TRANSITIONS[shipment.status].includes(update.status)) {
+      return err(new InvalidShipmentStatusError("無効な配送状態です"))
+    }
+
+    const now = new Date();
+    const shippedAt = update.status === "shipped" && shipment.status === "preparing" ? now : shipment.shippedAt;
+    return ok({
+      ...shipment,
+      trackingId: trimmedTrackingId ?? null,
+      carrier: trimmedCarrier ?? null,
+      status: update.status,
+      shippedAt,
+      updatedAt: now,
+    })
+  },
+}
+
+
+interface ShipmentRepository {
+  create: (shipment: Shipment) => Promise<Result<void, RepositoryError>>;
+  update: (shipment: Shipment) => Promise<Result<void, RepositoryError>>;
 }

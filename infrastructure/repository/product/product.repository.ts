@@ -5,7 +5,7 @@ import { DB } from "@/db";
 import { productImageTable, productTable } from "@/db/schema/product.schema";
 import { Product, ProductImage } from "@/domain/product/product.domain";
 import { ProductRepository } from "@/domain/product/product.domain.repository";
-import { RepositoryError } from "@/infrastructure/repository/repository.error";
+import { RepositoryError } from "@/domain/repository.error";
 import { SelectProductTable } from "@/types/dto/response/product.actions.response";
 
 export const createProductRepository = (db: DB): ProductRepository => ({
