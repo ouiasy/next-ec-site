@@ -1,6 +1,7 @@
 import { Result, ok, err } from "neverthrow";
 import { ulid } from "ulid";
 import { BrandDomainError, EmptyValueError } from "./brand.domain.errors";
+import { RepositoryError } from "../repository.error";
 
 export type Brand = {
 	readonly id: string;
@@ -71,7 +72,7 @@ export const brandDomain = {
 };
 
 export interface BrandRepository {
-	getBrandById: (brandId: string) => Promise<Brand | null>;
-	getBrandsByIDs: (ids: string[]) => Promise<Brand[]>;
-	save: (brand: Brand) => Promise<void>;
+	getBrandById: (brandId: string) => Promise<Result<Brand | null, RepositoryError>>;
+	getBrandsByIDs: (ids: string[]) => Promise<Result<Brand[], RepositoryError>>;
+	save: (brand: Brand) => Promise<Result<Brand, RepositoryError>>;
 }

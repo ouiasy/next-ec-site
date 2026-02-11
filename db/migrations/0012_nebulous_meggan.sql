@@ -1,1 +1,0 @@
-ALTER TABLE "product_images" ALTER COLUMN "display_order" SET NOT NULL;

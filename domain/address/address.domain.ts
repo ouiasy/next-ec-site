@@ -2,8 +2,9 @@ import { err, ok, Result } from "neverthrow";
 import { isValid, ULID, ulid } from "ulid";
 import { PREFECTURES } from "@/zod/dataset/prefecture";
 import { AddressDomainError, EmptyFieldError, InvalidPostalCodeError, InvalidPrefectureError, InvalidUserIdError } from "./address.domain.error";
+import { RepositoryError } from "../repository.error";
 
-type Prefecture = (typeof PREFECTURES)[number];
+export type Prefecture = (typeof PREFECTURES)[number];
 
 export type Address = {
 	readonly id: ULID;
@@ -133,3 +134,8 @@ export const addressDomain = {
 		});
 	},
 };
+
+export interface AddressRepository {
+	getAddrByUserId: (userId: ULID) => Promise<Result<Address[], RepositoryError>>;
+	save: (addr: Address) => Promise<Result<Address, RepositoryError>>;
+}

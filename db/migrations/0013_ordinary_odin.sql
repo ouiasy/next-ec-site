@@ -1,1 +1,0 @@
-ALTER TABLE "carts" ADD COLUMN "updated_at" timestamp with time zone NOT NULL;

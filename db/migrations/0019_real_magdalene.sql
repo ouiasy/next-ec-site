@@ -1,1 +1,0 @@
-ALTER TABLE "orders" RENAME COLUMN "name" TO "customer_name";

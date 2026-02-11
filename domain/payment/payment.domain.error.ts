@@ -6,8 +6,6 @@ export type PaymentDomainError =
   | InvalidMethodError
   | InvalidTransactionIdError
   | InvalidOrderIdError
-  | InvalidCreatedAtError
-  | InvalidUpdatedAtError
   | InvalidPaymentError;
 
 export class InvalidAmountError extends Error {
