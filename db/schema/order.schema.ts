@@ -1,4 +1,4 @@
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { productTable } from "@/db/schema/product.schema";
 import { users } from "@/db/schema/user.schema";
 import { PREFECTURES } from "@/zod/dataset/prefecture";
@@ -6,8 +6,10 @@ import { PREFECTURES } from "@/zod/dataset/prefecture";
 export const orderTable = pgTable("orders", {
 	id: text().primaryKey(),
 	userId: text()
-		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
+		.references(() => users.id, { onDelete: "set null" }),
+	customerName: text().notNull(),
+	email: text().notNull(),
+
 	itemsSubtotal: integer().notNull(),
 	taxTotal: integer().notNull(),
 	shippingFee: integer().notNull(),
@@ -15,13 +17,16 @@ export const orderTable = pgTable("orders", {
 	discount: integer().notNull(),
 	shippingDiscount: integer().notNull(),
 	grandTotal: integer().notNull(),
+	
 	orderStatus: text({ enum: ["pending", "paid", "completed", "cancelled"] })
 		.default("pending")
 		.notNull(),
 
 	createdAt: timestamp({ withTimezone: true }).notNull(),
 	updatedAt: timestamp({ withTimezone: true }).notNull(),
-});
+}, (table) => [
+	index("order_user_id_idx").on(table.userId),
+]);
 
 export const orderItemsTable = pgTable("order_items", {
 	id: text().primaryKey(),
@@ -37,7 +42,12 @@ export const orderItemsTable = pgTable("order_items", {
 	priceBeforeTax: integer().notNull(),
 	taxRate: integer().notNull(),
 	quantity: integer().notNull(),
-});
+	createdAt: timestamp({ withTimezone: true }).notNull(),
+
+}, (table) => [
+	index("order_items_order_id_idx").on(table.orderId),
+	index("order_items_product_id_idx").on(table.productId),
+]);
 
 export const shippingAddrTable = pgTable("shipping_addresses", {
 	id: text().primaryKey(),
@@ -51,7 +61,9 @@ export const shippingAddrTable = pgTable("shipping_addresses", {
 	city: text().notNull(),
 	street: text().notNull(),
 	building: text(),
-});
+}, (table) => [
+	index("shipping_addr_order_id_idx").on(table.orderId),
+]);
 
 export const billingAddrTable = pgTable("billing_addresses", {
 	id: text().primaryKey(),
@@ -65,10 +77,15 @@ export const billingAddrTable = pgTable("billing_addresses", {
 	city: text().notNull(),
 	street: text().notNull(),
 	building: text(),
-});
+}, (table) => [
+	index("billing_addr_order_id_idx").on(table.orderId),
+]);
 
 export const shipmentTable = pgTable("shipments", {
 	id: text().primaryKey(),
+	userId: text()
+		.notNull()
+		.references(() => users.id),
 	orderId: text()
 		.notNull()
 		// .unique()  // 分割配送対応のため
@@ -90,15 +107,20 @@ export const shipmentTable = pgTable("shipments", {
 	shippedAt: timestamp({ withTimezone: true }),
 	createdAt: timestamp({ withTimezone: true }).notNull(),
 	updatedAt: timestamp({ withTimezone: true }).notNull(),
-});
+}, (table) => [
+	index("shipment_order_id_idx").on(table.orderId),
+]);
 
 export const paymentTable = pgTable("payments", {
 	id: text().primaryKey(),
+	userId: text()
+		.notNull()
+		.references(() => users.id),
 	orderId: text()
 		.notNull()
 		.references(() => orderTable.id),
 
-	transactionId: text(), // paypal, stripeなどの決済id
+	transactionId: text().notNull(), // paypal, stripeなどの決済id
 
 	method: text({ enum: ["paypal", "stripe", "cash_on_delivery"] }).notNull(),
 
@@ -118,4 +140,7 @@ export const paymentTable = pgTable("payments", {
 
 	createdAt: timestamp({ withTimezone: true }).notNull(),
 	updatedAt: timestamp({ withTimezone: true }).notNull(),
-});
+}, (table) => [
+	index("payment_order_id_idx").on(table.orderId),
+	index("payment_user_id_idx").on(table.userId),
+]);

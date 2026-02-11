@@ -5,7 +5,7 @@ import { DB } from "@/db";
 import { cartItemTable, cartTable } from "@/db/schema/cart.schema";
 import { Cart } from "@/domain/cart/cart.domain";
 import { CartRepository } from "@/domain/cart/cart.domain.repository";
-import { RepositoryError } from "@/infrastructure/repository/repository.error";
+import { RepositoryError } from "@/domain/repository.error";
 
 export const createCartRepository = (db: DB): CartRepository => ({
 	getCartByUserID: async (

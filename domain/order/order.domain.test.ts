@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { orderDomain } from "@/domain/order/order.domain";
-import { CreateOrderInput, OrderAddress } from "@/domain/order/order.types";
+import { CreateOrderInput, orderDomain } from "@/domain/order/order.domain";
+import { OrderAddress } from "@/domain/order/order.types";
 
 describe("orderDomain", () => {
   const dummyAddress: OrderAddress = {
@@ -21,7 +21,7 @@ describe("orderDomain", () => {
             productId: "prod-1",
             productName: "Product 1",
             priceExTax: 1000,
-            taxRate: 10,　// 10%
+            taxRate: 10, // 10%
             quantity: 2,
           },
         ],
