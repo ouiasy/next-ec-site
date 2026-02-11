@@ -31,6 +31,7 @@ export const createCartRepository = (db: DB): CartRepository => ({
 				items: cartItems,
 			});
 		} catch (e) {
+			console.error("error at CartRepository [getCartByUserID]: ", e);
 			return err(
 				new RepositoryError("カートの取得に失敗しました", { cause: e }),
 			);
@@ -67,6 +68,7 @@ export const createCartRepository = (db: DB): CartRepository => ({
 			});
 			return ok(undefined);
 		} catch (e) {
+			console.error("error at CartRepository [upsert]: ", e);
 			return err(
 				new RepositoryError("カートの更新に失敗しました", { cause: e }),
 			);
