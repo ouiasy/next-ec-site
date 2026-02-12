@@ -5,7 +5,7 @@ import { RepositoryError } from "@/domain/repository.error";
 import { Result, ok, err } from "neverthrow";
 import { ULID } from "ulid";
 import { eq } from "drizzle-orm";
-import { Prefecture } from "@/domain/address/prefecture.type";
+import { Prefecture } from "@/types/prefecture.type";
 
 export type RawAddressSelect = typeof addressTable.$inferSelect;
 export type RawAddressInsert = typeof addressTable.$inferInsert;

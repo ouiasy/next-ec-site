@@ -1,41 +1,119 @@
 import "server-only";
 
 import { DB } from "@/db"
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { OrderRepository } from "@/domain/order/order.domain"
 import { Order } from "@/domain/order/order.types"
 import { RepositoryError } from "@/domain/repository.error"
-import { err, Result } from "neverthrow"
+import { err, Result, ok } from "neverthrow"
 import { ULID } from "ulid"
 import { billingAddrTable, orderItemsTable, orderTable, shippingAddrTable } from "@/db/schema/order.schema";
-import { fromRawOrderComposite } from "./order.repository.utils";
+import { fromRawOrderComposite, toRawOrderComposite } from "./order.repository.utils";
 
 
 export const createOrderRepository = (db: DB): OrderRepository => {
     return {
-        getOrderById: async (orderId: ULID): Promise<Result<Order, RepositoryError>> => {
+        getOrderById: async (orderId: ULID): Promise<Result<Order | null, RepositoryError>> => {
             try {
-                const rawOrder = await db
-                    .select()
-                    .from(orderTable)
-                    .where(eq(orderTable.id, orderId))
-                    .innerJoin(orderItemsTable, eq(orderTable.id, orderItemsTable.orderId))
-                    .innerJoin(shippingAddrTable, eq(orderTable.id, shippingAddrTable.orderId))
-                    .innerJoin(billingAddrTable, eq(orderTable.id, billingAddrTable.orderId));
+                const rawOrder = await db.query.orderTable
+                    .findFirst({
+                        with: {
+                            items: true,
+                            shippingAddr: true,
+                            billingAddr: true,
+                        },
+                        where: {
+                            id: orderId,
+                        }
+                    })
+                if (rawOrder === undefined) {
+                    return ok(null)
+                }
+                if (rawOrder.shippingAddr === null || rawOrder.billingAddr === null) {
+                    throw new Error("注文時の請求先あるいは配送先の住所が見つかりません")
+                }
 
-                if (rawOrder.length !== 1) 
-                    throw new Error("該当のorderが見つかりませんでした")
-
-                const order = rawOrder.map(fromRawOrderComposite)
+                const order = fromRawOrderComposite(rawOrder)
+                return ok(order);
             } catch (e) {
-                return err(new RepositoryError("オーダーの検索に失敗", {cause: e}))
+                return err(new RepositoryError("注文履歴の検索に失敗", { cause: e }))
             }
         },
-        getOrdersByUserId: function (userId: ULID): Promise<Result<Order[], RepositoryError>> {
-            throw new Error("Function not implemented.")
+        getOrdersByUserId: async (userId: ULID): Promise<Result<Order[], RepositoryError>> => {
+            try {
+                const rawOrders = await db.query.orderTable
+                    .findMany({
+                        with: {
+                            items: true,
+                            shippingAddr: true,
+                            billingAddr: true,
+                        },
+                        where: {
+                            userId: userId,
+                        }
+                    })
+                const orders = rawOrders.map(fromRawOrderComposite);
+                return ok(orders);
+            } catch (e) {
+                return err(new RepositoryError("注文履歴の検索に失敗", { cause: e }))
+            }
         },
-        save: function (order: Order): Promise<Result<Order, RepositoryError>> {
-            throw new Error("Function not implemented.")
+        save: async (order: Order): Promise<Result<Order, RepositoryError>> => {
+            try {
+                const { rawOrder, rawOrderItems,
+                    rawShippingAddr, rawBillingAddr } = toRawOrderComposite(order);
+
+                const rawUpdatedOrder = await db.transaction(async (tx) => {
+                    await tx.insert(orderTable).values(rawOrder).onConflictDoUpdate({
+                        target: orderTable.id,
+                        set: {
+                            ...rawOrder,
+                        }
+                    })
+
+                    await Promise.all([
+                        tx.insert(shippingAddrTable).values(rawShippingAddr).onConflictDoUpdate({
+                            target: shippingAddrTable.id,
+                            set: {
+                                ...rawShippingAddr,
+                            }
+                        }),
+                        tx.insert(billingAddrTable).values(rawBillingAddr).onConflictDoUpdate({
+                            target: billingAddrTable.id,
+                            set: {
+                                ...rawBillingAddr,
+                            }
+                        }),
+                    ])
+
+                    await tx.delete(orderItemsTable).where(eq(orderItemsTable.orderId, order.id));
+
+                    if (rawOrderItems.length > 0) {
+                        await tx.insert(orderItemsTable).values(rawOrderItems);
+                    }
+
+                    const rawUpdatedOrder = await tx.query.orderTable.findFirst({
+                        with: {
+                            items: true,
+                            shippingAddr: true,
+                            billingAddr: true,
+                        },
+                        where: {
+                            id: order.id,
+                        },
+                    })
+
+                    if (rawUpdatedOrder === undefined)
+                        throw new Error("注文情報が消失しました");
+                    if (rawUpdatedOrder.shippingAddr === null || rawUpdatedOrder.billingAddr === null)
+                        throw new Error("注文時の配送先あるいは請求先住所が見つかりません");
+
+                    return rawUpdatedOrder
+                })
+                return ok(fromRawOrderComposite(rawUpdatedOrder))
+            } catch (e) {
+                return err(new RepositoryError("注文情報の更新に失敗", { cause: e }))
+            }
         }
     }
 }

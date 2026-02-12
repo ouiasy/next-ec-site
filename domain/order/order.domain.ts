@@ -155,7 +155,7 @@ export const orderDomain = {
 };
 
 export interface OrderRepository {
-	getOrderById: (orderId: ULID) => Promise<Result<Order, RepositoryError>>;
+	getOrderById: (orderId: ULID) => Promise<Result<Order | null, RepositoryError>>;
 	getOrdersByUserId: (userId: ULID) => Promise<Result<Order[], RepositoryError>>;
 	save: (order: Order) => Promise<Result<Order, RepositoryError>>;
 }

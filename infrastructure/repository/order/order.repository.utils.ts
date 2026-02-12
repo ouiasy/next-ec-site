@@ -87,13 +87,17 @@ export const toRawOrderComposite = (order: Order): {
     }
 }
 
+export type RawOrderCompositeSelect = RawOrderSelect & {
+    items: RawOrderItemSelect[],
+    shippingAddr: RawShippingAddrSelect | null,
+    billingAddr: RawBillingAddrSelect | null,
+}
+
+
 export const fromRawOrderComposite = (
-    rawOrder: RawOrderSelect,
-    rawOrderItems: RawOrderItemSelect[],
-    rawShippingAddr: RawShippingAddrSelect,
-    rawBillingAddr: RawBillingAddrSelect,
+    res: RawOrderCompositeSelect
 ): Order => {
-    const items = rawOrderItems.map((item): OrderItems => ({
+    const items = res.items.map((item): OrderItems => ({
         id: item.id,
         productId: item.productId,
         name: item.name,
@@ -103,26 +107,26 @@ export const fromRawOrderComposite = (
         createdAt: item.createdAt,
     }))
 
-    const shippingAddr: OrderAddress = rawShippingAddr;
-    const billinAddr: OrderAddress = rawBillingAddr;
+    const shippingAddr: OrderAddress = res.shipping_addresses;
+    const billinAddr: OrderAddress = res.billingAddress;
 
     return {
-        id: rawOrder.id,
-        userId: rawOrder.userId,
-        customerName: rawOrder.customerName,
-        email: rawOrder.email,
-        itemsSubtotal: rawOrder.itemsSubtotal,
-        couponId: rawOrder.couponId,
-        shippingFee: rawOrder.shippingFee,
-        shippingDiscount: rawOrder.shippingDiscount,
-        discount: rawOrder.discount,
-        taxTotal: rawOrder.taxTotal,
-        grandTotal: rawOrder.grandTotal,
-        orderStatus: rawOrder.orderStatus,
+        id: res.id,
+        userId: res.userId,
+        customerName: res.customerName,
+        email: res.email,
+        itemsSubtotal: res.itemsSubtotal,
+        couponId: res.couponId,
+        shippingFee: res.shippingFee,
+        shippingDiscount: res.shippingDiscount,
+        discount: res.discount,
+        taxTotal: res.taxTotal,
+        grandTotal: res.grandTotal,
+        orderStatus: res.orderStatus,
         items: items,
         shippingAddress: shippingAddr,
         billingAddress: billinAddr,
-        createdAt: rawOrder.createdAt,
-        updatedAt: rawOrder.updatedAt,
+        createdAt: res.createdAt,
+        updatedAt: res.updatedAt,
     }
 }
