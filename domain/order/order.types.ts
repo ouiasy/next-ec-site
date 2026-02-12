@@ -1,9 +1,10 @@
 import { ProductImage } from "@/domain/product/product.domain";
+import { Prefecture } from "@/types/prefecture.type";
 import { ULID } from "ulid";
 
 export type Order = {
 	readonly id: ULID;
-	readonly userId: ULID; // todo
+	readonly userId: ULID | null; // ユーザーが退会する可能性があるのでnull
 	readonly customerName: string;
 	readonly email: string;
 
@@ -35,19 +36,19 @@ export type OrderItems = {
 	readonly name: string;
 	readonly priceBeforeTax: number;
 	readonly taxRate: number;
-	readonly description: string;
-	readonly productImages: ProductImage[]; 
 	readonly quantity: number;
 	readonly createdAt: Date;
 };
 
 export type OrderAddress = {
+	readonly id: ULID;
 	readonly name: string;
 	readonly postalCode: string;
-	readonly prefecture: string;
+	readonly prefecture: Prefecture;
 	readonly city: string;
 	readonly street: string;
 	readonly building: string | null;
+	readonly createdAt: Date;
 };
 
 

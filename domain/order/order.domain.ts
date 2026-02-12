@@ -8,6 +8,7 @@ import { ProductImage } from "../product/product.domain";
 import { Result, err, ok } from "neverthrow";
 import { InvalidIdError, InvalidValueError, OrderDomainError } from "./order.domain.errors";
 import { OrderStatus } from "@/domain/order/order.types";
+import { RepositoryError } from "../repository.error";
 
 export type CreateOrderInput = {
 	readonly userId: ULID;
@@ -153,3 +154,8 @@ export const orderDomain = {
 
 };
 
+export interface OrderRepository {
+	getOrderById: (orderId: ULID) => Promise<Result<Order, RepositoryError>>;
+	getOrdersByUserId: (userId: ULID) => Promise<Result<Order[], RepositoryError>>;
+	save: (order: Order) => Promise<Result<Order, RepositoryError>>;
+}

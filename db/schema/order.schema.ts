@@ -1,3 +1,4 @@
+import { defineRelations } from 'drizzle-orm';
 import { index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { productTable } from "@/db/schema/product.schema";
 import { users } from "@/db/schema/user.schema";
@@ -61,6 +62,7 @@ export const shippingAddrTable = pgTable("shipping_addresses", {
 	city: text().notNull(),
 	street: text().notNull(),
 	building: text(),
+	createdAt: timestamp({ withTimezone: true }).notNull(),
 }, (table) => [
 	index("shipping_addr_order_id_idx").on(table.orderId),
 ]);
@@ -77,6 +79,7 @@ export const billingAddrTable = pgTable("billing_addresses", {
 	city: text().notNull(),
 	street: text().notNull(),
 	building: text(),
+	createdAt: timestamp({ withTimezone: true }).notNull(),
 }, (table) => [
 	index("billing_addr_order_id_idx").on(table.orderId),
 ]);
@@ -144,3 +147,5 @@ export const paymentTable = pgTable("payments", {
 	index("payment_order_id_idx").on(table.orderId),
 	index("payment_user_id_idx").on(table.userId),
 ]);
+
+const relations = defineRelations({orderTable, orderItemsTable, })

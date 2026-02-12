@@ -6,5 +6,5 @@ export interface CartRepository {
 	getCartByUserID: (
 		userID: string,
 	) => Promise<Result<Cart | null, RepositoryError>>;
-	upsert: (cart: Cart) => Promise<Result<void, RepositoryError>>;
+	save: (cart: Cart) => Promise<Result<Cart, RepositoryError>>;
 }

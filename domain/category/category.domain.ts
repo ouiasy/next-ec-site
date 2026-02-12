@@ -1,6 +1,8 @@
+import "server-only";
 import { Result, err, ok } from "neverthrow";
 import { isValid, ulid } from "ulid";
 import { CategoryDomainError, CategoryIdMismatchError, EmptyValueError, InvalidParentIdError } from "./category.domain.errors";
+import { RepositoryError } from "../repository.error";
 
 export type Category = {
 	readonly id: string;
@@ -78,7 +80,9 @@ export const categoryDomain = {
 };
 
 export interface CategoryRepository {
-	getCategoryById: (categoryId: string) => Promise<Category | null>;
-	getCategoriesByIDs: (ids: string[]) => Promise<Category[]>;
-	save: (category: Category) => Promise<void>;
+	getCategoryById: (categoryId: string) => Promise<Result<Category | null, RepositoryError>>;
+	getCategoriesByIDs: (ids: string[]) => Promise<Result<Category[], RepositoryError>>;
+	save: (category: Category) => Promise<Result<Category, RepositoryError>>;
 }
+
+
