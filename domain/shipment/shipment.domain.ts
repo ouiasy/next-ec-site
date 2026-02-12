@@ -2,7 +2,7 @@ import {isValid, ULID, ulid} from "ulid";
 import { InvalidIdError, InvalidShipmentStatusError, InvalidValueError, ShipmentDomainError } from "./shipment.domain.errors";
 import { Result, err, ok } from "neverthrow";
 import { RepositoryError } from "@/domain/repository.error";
-import { Update } from "vite";
+
 
 export type Shipment = {
   readonly id: ULID;
@@ -18,8 +18,7 @@ export type Shipment = {
   readonly updatedAt: Date;
 }
 
-export const SHIPMENT_STATUS = ["preparing", "shipped", "in_transit", "delivered", "returned", "lost"];
-export type ShipmentStatus = typeof SHIPMENT_STATUS[number];
+export type ShipmentStatus = "preparing"| "shipped"| "in_transit"| "delivered"| "returned"| "lost"
 
 const VALID_SHIPMENT_TRANSITIONS: Record<ShipmentStatus, ShipmentStatus[]> = {
   preparing: ["shipped", "lost"],
@@ -98,7 +97,7 @@ export const shipmentDomain = {
 }
 
 
-interface ShipmentRepository {
-  create: (shipment: Shipment) => Promise<Result<void, RepositoryError>>;
-  update: (shipment: Shipment) => Promise<Result<void, RepositoryError>>;
+export interface ShipmentRepository {
+  getShipmentByOrderId: (orderId: ULID) => Promise<Result<Shipment[], RepositoryError>>
+  save: (shipment: Shipment) => Promise<Result<Shipment, RepositoryError>>;
 }
