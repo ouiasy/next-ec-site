@@ -107,8 +107,12 @@ export const fromRawOrderComposite = (
         createdAt: item.createdAt,
     }))
 
-    const shippingAddr: OrderAddress = res.shipping_addresses;
-    const billinAddr: OrderAddress = res.billingAddress;
+    if (res.shippingAddr === null || res.billingAddr === null) {
+        throw new Error("注文時の請求先あるいは配送先の住所が見つかりません")
+    }
+
+    const shippingAddr: OrderAddress = res.shippingAddr;
+    const billinAddr: OrderAddress = res.billingAddr;
 
     return {
         id: res.id,

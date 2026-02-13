@@ -1,6 +1,7 @@
 import {isValid, ULID, ulid} from "ulid";
 import { InvalidAmountError, InvalidMethodError, InvalidOrderIdError, InvalidStatusError, InvalidTransactionIdError, PaymentDomainError } from "./payment.domain.error";
 import { Result, ok, err } from "neverthrow";
+import { RepositoryError } from "../repository.error";
 
 export type Payment = {
   readonly id: ULID;
@@ -59,6 +60,7 @@ export const paymentDomain = {
     const now = new Date()
     return ok({
       id: ulid(),
+      userId: input.userId,
       orderId: input.orderId,
       transactionId: input.transactionId,
       method: input.method,
@@ -90,17 +92,24 @@ export const paymentDomain = {
 }
 
 
-interface PaymentRepository {
+export interface PaymentRepository {
   /**
-   * 新しい支払いを作成する
+   * 新しい支払いを作成あるいは既存の支払い方法を保存する
    * @param payment 作成する支払い情報
    * @returns 
    */
-  create: (payment: Payment) => Promise<void>;
+  save: (payment: Payment) => Promise<Result<Payment, RepositoryError>>;
+
   /**
-   * 既存の支払いを更新する
-   * @param payment 更新する支払い情報
+   * orderIDに紐付けられた支払い情報(複数の可能性あり)を取得する。作成日時に関して降順で出力する。
+   * @param orderId 
    * @returns 
    */
-  update: (payment: Payment) => Promise<void>;
+  getPaymentsByOrderId: (orderId: ULID) => Promise<Result<Payment[], RepositoryError>>;
+  /**
+   * userIDに紐付けられた支払い情報(複数あり)の取得。作成日時に関して降順で出力する。
+   * @param userId 
+   * @returns 
+   */
+  getPaymentsByUserId: (userId: ULID) => Promise<Result<Payment[], RepositoryError>>;
 }

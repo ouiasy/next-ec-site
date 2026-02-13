@@ -125,7 +125,7 @@ export const paymentTable = pgTable("payments", {
 
 	transactionId: text().notNull(), // paypal, stripeなどの決済id
 
-	method: text({ enum: ["paypal", "stripe", "cash_on_delivery"] }).notNull(),
+	method: text({ enum: ["paypal", "stripe"] }).notNull(),
 
 	amount: integer().notNull(),
 	currency: text({ enum: ["JPY"] }).notNull(),
@@ -138,7 +138,6 @@ export const paymentTable = pgTable("payments", {
 			"refunded", // 返金済み
 		],
 	})
-		.default("pending")
 		.notNull(),
 
 	createdAt: timestamp({ withTimezone: true }).notNull(),

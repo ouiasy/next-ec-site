@@ -1,5 +1,6 @@
 import { defineRelations } from "drizzle-orm";
 import { billingAddrTable, orderItemsTable, orderTable, shippingAddrTable } from "./order.schema";
+import { productImageTable, productTable } from "./product.schema";
 
 export const orderRelations = defineRelations({
 	orderTable,
@@ -19,6 +20,19 @@ export const orderRelations = defineRelations({
 		billingAddr: r.one.shippingAddrTable({
 			from: r.orderTable.id,
 			to: r.billingAddrTable.orderId,
+		})
+	},
+}))
+
+
+export const productRelations = defineRelations({
+	productTable,
+	productImageTable,
+}, (r) => ({
+	productTable: {
+		images: r.many.productImageTable({
+			from: r.productTable.id,
+			to: r.productImageTable.productId,
 		})
 	}
 }))

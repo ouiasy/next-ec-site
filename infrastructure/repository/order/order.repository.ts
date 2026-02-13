@@ -29,9 +29,6 @@ export const createOrderRepository = (db: DB): OrderRepository => {
                 if (rawOrder === undefined) {
                     return ok(null)
                 }
-                if (rawOrder.shippingAddr === null || rawOrder.billingAddr === null) {
-                    throw new Error("注文時の請求先あるいは配送先の住所が見つかりません")
-                }
 
                 const order = fromRawOrderComposite(rawOrder)
                 return ok(order);
@@ -105,8 +102,6 @@ export const createOrderRepository = (db: DB): OrderRepository => {
 
                     if (rawUpdatedOrder === undefined)
                         throw new Error("注文情報が消失しました");
-                    if (rawUpdatedOrder.shippingAddr === null || rawUpdatedOrder.billingAddr === null)
-                        throw new Error("注文時の配送先あるいは請求先住所が見つかりません");
 
                     return rawUpdatedOrder
                 })
