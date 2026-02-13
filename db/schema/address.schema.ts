@@ -1,5 +1,8 @@
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, text, timestamp, pgEnum } from "drizzle-orm/pg-core";
 import { users } from "./user.schema";
+import { PREFECTURES } from "@/zod/dataset/prefecture";
+
+export const prefectureEnum = pgEnum("prefecture", PREFECTURES);
 
 export const addressTable =
   pgTable("addresses", {
@@ -11,7 +14,7 @@ export const addressTable =
     lastName: text().notNull(),
     firstName: text().notNull(),
     postalCode: text().notNull(),
-    prefecture: text().notNull(),
+    prefecture: prefectureEnum().notNull(),
     city: text().notNull(),
     street: text().notNull(),
     building: text(),

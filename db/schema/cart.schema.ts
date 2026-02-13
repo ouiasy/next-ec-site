@@ -1,14 +1,16 @@
-import {users} from "@/db/schema/user.schema";
-import {productTable} from "@/db/schema/product.schema";
-import {index, integer, pgTable, text, timestamp, unique} from "drizzle-orm/pg-core";
+import { users } from "@/db/schema/user.schema";
+import { productTable } from "@/db/schema/product.schema";
+import { index, integer, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 
 
 export const cartTable = pgTable("carts", {
   id: text()
     .primaryKey(),
-  userId: text().references(() => users.id, {onDelete: "cascade"}),
-  createdAt: timestamp({withTimezone: true})
-    .notNull()
+  userId: text().notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp({ withTimezone: true })
+    .notNull(),
+  updatedAt: timestamp({ withTimezone: true })
+    .notNull(),
 }, (table) => [
   index("cart_user_id_idx").on(table.userId)
 ]);
@@ -20,14 +22,14 @@ export const cartItemTable = pgTable(
       .primaryKey(),
     cartId: text()
       .notNull()
-      .references(() => cartTable.id, {onDelete: "cascade"}),
+      .references(() => cartTable.id, { onDelete: "cascade" }),
     productId: text()
       .notNull()
-      .references(() => productTable.id, {onDelete: "cascade"}),
+      .references(() => productTable.id, { onDelete: "cascade" }),
     quantity: integer().notNull(),
-    createdAt: timestamp({withTimezone: true})
+    createdAt: timestamp({ withTimezone: true })
       .notNull(),
-    updatedAt: timestamp({withTimezone: true})
+    updatedAt: timestamp({ withTimezone: true })
       .notNull(),
   },
   (table) => [

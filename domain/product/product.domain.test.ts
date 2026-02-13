@@ -1,139 +1,231 @@
-
-
-import { describe, expect, test } from "vitest";
+import { ExperienceContextShippingPreference } from "@paypal/paypal-server-sdk";
 import { ulid } from "ulid";
-import { Product, productDomain } from "@/domain/product/product.domain";
-
-// デフォルト値を持つテスト用ファクトリ
-export const createTestProduct = (
-  overrides: Partial<Product> = {}
-): Product => {
-  const now = new Date();
-  return {
-    id: ulid(),
-    name: "テスト商品",
-    categoryId: ulid(),
-    priceBeforeTax: 1000,
-    taxRate: 10,
-    priceAfterTax: 1100,
-    brandId: ulid(),
-    numReviews: 0,
-    rating: null,
-    stock: 100,
-    isFeatured: false,
-    createdAt: now,
-    updatedAt: now,
-    ...overrides,  // 必要な部分だけ上書き
-  };
-};
+import { describe, expect, test, vi } from "vitest";
+import {
+	createTestProduct,
+	createTestProductImage,
+} from "@/.testutils/factories/factories";
+import { ProductCard } from "@/components/shared/products/product-card";
+import {
+	CreateProductInput,
+	Product,
+	productDomain,
+	UpdateProductInput,
+} from "@/domain/product/product.domain";
 
 describe("productDomain", () => {
-  describe("create", () => {
-    test("有効な入力で商品が作成されること", () => {
-      const input = {
-        name: " New Product ",
-        categoryId: ulid(),
-        priceBeforeTax: 2000,
-        taxRate: 10,
-        brandId: ulid(),
-        rating: null,
-        stock: 50,
-        isFeatured: true,
-      };
+	describe("create", () => {
+		test("有効な入力で商品が作成されること(ついでにimage作成のテスト)", () => {
+			const image = productDomain
+				.createImage({
+					url: "http://example.com",
+					imageName: null,
+					displayOrd: 0,
+				})
+				._unsafeUnwrap();
 
-      const product = productDomain.create(input);
+			const input: CreateProductInput = {
+				name: "New Product",
+				categoryId: ulid(),
+				description: "description example",
+				productImages: [image],
+				priceBeforeTax: 2000,
+				taxRate: 10,
+				brandId: ulid(),
+				rating: null,
+				stock: 50,
+				isFeatured: true,
+			};
 
-      expect(product.id).toBeDefined();
-      expect(product.name).toBe("New Product"); // trimされていること
-      expect(product.priceAfterTax).toBe(2200); // 2000 * 1.1 = 2200
-      expect(product.numReviews).toBe(0);
-      expect(product.createdAt).toBeInstanceOf(Date);
-    });
+			const product = productDomain.create(input)._unsafeUnwrap();
 
-    test("名前が空の場合はエラー", () => {
-      expect(() => productDomain.create({
-        name: "",
-        categoryId: null,
-        priceBeforeTax: 100,
-        taxRate: 10,
-        brandId: null,
-        stock: 10,
-        isFeatured: false,
-        rating: null,
-      })).toThrow();
-    });
+			expect(product.id).toBeDefined();
+			expect(product.name).toBe(input.name);
+			expect(product.priceAfterTax).toBe(
+				input.priceBeforeTax * (1 + input.taxRate / 100),
+			);
+			expect(product.numReviews).toBe(0);
+			expect(product.createdAt).toBeInstanceOf(Date);
+		});
 
-    test("価格が負の場合はエラー", () => {
-      expect(() => productDomain.create({
-        name: "Name",
-        categoryId: null,
-        priceBeforeTax: -1,
-        taxRate: 10,
-        brandId: null,
-        stock: 10,
-        isFeatured: false,
-        rating: null,
-      })).toThrow();
-    });
+		test("名前が空の場合はエラー", () => {
+			const product = productDomain.create({
+				name: " ",
+				categoryId: ulid(),
+				description: "description example",
+				productImages: [],
+				priceBeforeTax: 2000,
+				taxRate: 10,
+				brandId: ulid(),
+				rating: null,
+				stock: 50,
+				isFeatured: true,
+			});
+			expect(product.isOk()).toBe(false);
+		});
 
-    test("不正なcategoryIdの場合はエラー", () => {
-      expect(() => productDomain.create({
-        name: "Name",
-        categoryId: "invalid-ulid",
-        priceBeforeTax: 100,
-        taxRate: 10,
-        brandId: null,
-        stock: 10,
-        isFeatured: false,
-        rating: null,
-      })).toThrow();
-    });
-  });
+		test("商品説明が空の場合はエラー", () => {
+			const product = productDomain.create({
+				name: "name",
+				categoryId: ulid(),
+				description: " ",
+				productImages: [],
+				priceBeforeTax: 2000,
+				taxRate: 10,
+				brandId: ulid(),
+				rating: null,
+				stock: 50,
+				isFeatured: true,
+			});
+			expect(product.isOk()).toBe(false);
+		});
 
-  describe("reduceStock", () => {
-    test("在庫を減らせること", () => {
-      const product = createTestProduct({ stock: 10 });
-      const updated = productDomain.reduceStock(product, 3);
-      expect(updated.stock).toBe(7);
-    });
+		test("価格が負の場合はエラー", () => {
+			const product = productDomain.create({
+				name: "name",
+				categoryId: ulid(),
+				description: "description example",
+				productImages: [],
+				priceBeforeTax: -2000,
+				taxRate: 10,
+				brandId: ulid(),
+				rating: null,
+				stock: 50,
+				isFeatured: true,
+			});
+			expect(product.isOk()).toBe(false);
+		});
 
-    test("在庫以上の数を減らそうとするとエラー", () => {
-      const product = createTestProduct({ stock: 5 });
-      expect(() => productDomain.reduceStock(product, 6)).toThrow();
-    });
+		test("不正な税率の場合はエラー", () => {
+			const product = productDomain.create({
+				name: "name",
+				categoryId: ulid(),
+				description: "description example",
+				productImages: [],
+				priceBeforeTax: 2000,
+				taxRate: 7,
+				brandId: ulid(),
+				rating: null,
+				stock: 50,
+				isFeatured: true,
+			});
+			expect(product.isOk()).toBe(false);
+		});
 
-    test("0以下の数値を指定するとエラー", () => {
-      const product = createTestProduct({ stock: 5 });
-      expect(() => productDomain.reduceStock(product, 0)).toThrow();
-    });
-  });
+		test("在庫が負の場合はエラー", () => {
+			const product = productDomain.create({
+				name: "name",
+				categoryId: ulid(),
+				description: "description example",
+				productImages: [],
+				priceBeforeTax: 2000,
+				taxRate: 10,
+				brandId: ulid(),
+				rating: null,
+				stock: -50,
+				isFeatured: true,
+			});
+			expect(product.isOk()).toBe(false);
+		});
+	});
 
-  describe("increaseStock", () => {
-    test("在庫を増やせること", () => {
-      const product = createTestProduct({ stock: 10 });
-      const updated = productDomain.increaseStock(product, 5);
-      expect(updated.stock).toBe(15);
-    });
+	describe("update", () => {
+		test("正常に商品情報がupdateされる", () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(new Date());
 
-    test("0以下の数値を指定するとエラー", () => {
-      const product = createTestProduct({ stock: 5 });
-      expect(() => productDomain.increaseStock(product, 0)).toThrow();
-    });
-  });
+			const product = createTestProduct();
+			const updatedImages = product.productImages;
+			updatedImages.push(createTestProductImage());
+			const updatedProduct: UpdateProductInput = {
+				name: "updated Name",
+				categoryId: ulid(),
+				brandId: ulid(),
+				description: "updated description",
+				priceBeforeTax: product.priceBeforeTax * 2,
+				isFeatured: !product.isFeatured,
+				stock: product.stock + 1,
+				taxRate: 0,
+				productImages: updatedImages,
+			};
 
-  describe("addNumReviews", () => {
-    test("レビュー数が1増えること", () => {
-      const product = createTestProduct({ numReviews: 5 });
-      const updated = productDomain.addNumReviews(product);
-      expect(updated.numReviews).toBe(6);
-    });
-  });
+			vi.advanceTimersByTime(1000);
 
-  describe("changeIsFeatured", () => {
-    test("注目商品の状態を変更できること", () => {
-      const product = createTestProduct({ isFeatured: false });
-      const updated = productDomain.changeIsFeatured(product, true);
-      expect(updated.isFeatured).toBe(true);
-    });
-  });
+			const res = productDomain.update(product, updatedProduct)._unsafeUnwrap();
+			expect(res.id).toBe(product.id);
+			expect(res.name).toBe(updatedProduct.name);
+			expect(res.description).toBe(updatedProduct.description);
+			expect(res.categoryId).toBe(updatedProduct.categoryId);
+			expect(res.brandId).toBe(updatedProduct.brandId);
+			expect(res.isFeatured).toBe(updatedProduct.isFeatured);
+			expect(res.priceBeforeTax).toBe(updatedProduct.priceBeforeTax);
+			expect(res.taxRate).toBe(updatedProduct.taxRate);
+			expect(res.priceAfterTax).toBe(
+				Math.ceil(res.priceBeforeTax * (1 + res.taxRate / 100)),
+			);
+			expect(res.stock).toBe(updatedProduct.stock);
+			expect(res.productImages).toEqual(expect.arrayContaining(updatedImages));
+			expect(res.updatedAt.getTime()).toBeGreaterThan(product.updatedAt.getTime());
+		});
+
+	});
+
+	describe("createImage", () => {
+		test("正常に画像が作成される", () => {
+			const image = productDomain.createImage({
+				url: "http://example.com",
+				imageName: null,
+				displayOrd: 0,
+			})._unsafeUnwrap();
+			expect(image.id).toBeDefined();
+			expect(image.url).toBe("http://example.com");
+			expect(image.imageName).toBeNull();
+			expect(image.displayOrd).toBe(0);
+			expect(image.createdAt).toBeInstanceOf(Date);
+		});
+
+		test("画像URLが空の場合はエラー", () => {
+			const image = productDomain.createImage({
+				url: " ",
+				imageName: null,
+				displayOrd: 0,
+			});
+			expect(image.isOk()).toBe(false);
+		});
+	});
+
+	describe("changeStockBy", () => {
+		test("在庫を増やす", () => {
+			const product = createTestProduct({ stock: 10 });
+			const updated = productDomain.changeStockBy(product, 3)._unsafeUnwrap();
+			expect(updated.stock).toBe(13);
+		});
+		test("在庫を減らす", () => {
+			const product = createTestProduct({ stock: 10 });
+			const updated = productDomain.changeStockBy(product, -3)._unsafeUnwrap();
+			expect(updated.stock).toBe(7);
+		});
+
+		test("在庫以上の数を減らそうとするとエラー", () => {
+			const product = createTestProduct({ stock: 5 });
+			const res = productDomain.changeStockBy(product, -6);
+			expect(res.isErr()).toBe(true);
+		});
+	});
+
+	describe("addNumReviews", () => {
+		test("レビュー数が1増えること", () => {
+			const product = createTestProduct({ numReviews: 5 });
+			const updated = productDomain.addNumReviews(product);
+			expect(updated.numReviews).toBe(6);
+		});
+	});
+
+	describe("changeIsFeatured", () => {
+		test("注目商品の状態を変更できること", () => {
+			const product = createTestProduct({ isFeatured: false });
+			const updated = productDomain.changeIsFeatured(product, true);
+			expect(updated.isFeatured).toBe(true);
+		});
+	});
 });
