@@ -75,6 +75,5 @@ export const createShipmentRepository = (db: DB): ShipmentRepository => {
         return err(new RepositoryError("配送情報の更新に失敗しました", { cause: e }))
       }
     }
-
   }
 }
